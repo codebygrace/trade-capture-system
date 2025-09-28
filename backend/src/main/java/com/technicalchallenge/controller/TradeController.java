@@ -87,11 +87,6 @@ public class TradeController {
             @Valid @RequestBody TradeDTO tradeDTO) {
         logger.info("Creating new trade: {}", tradeDTO);
         try {
-            // Validation: Book name is required
-            if (tradeDTO.getBookName() == null) {
-                return ResponseEntity.badRequest().body("Book name is required");
-            }
-
             Trade trade = tradeMapper.toEntity(tradeDTO);
             tradeService.populateReferenceDataByName(trade, tradeDTO);
             Trade savedTrade = tradeService.saveTrade(trade, tradeDTO);
