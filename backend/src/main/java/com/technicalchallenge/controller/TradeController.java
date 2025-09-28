@@ -120,7 +120,7 @@ public class TradeController {
             if(!Objects.equals(id,tradeDTO.getTradeId())) {
                 return  ResponseEntity.badRequest().body("Trade ID in path must match Trade ID in request body");
             }
-//            tradeDTO.setTradeId(id); // Ensure the ID matches
+            tradeDTO.setTradeId(id); // Ensure the ID matches
             Trade amendedTrade = tradeService.amendTrade(id, tradeDTO);
             TradeDTO responseDTO = tradeMapper.toDto(amendedTrade);
             return ResponseEntity.ok(responseDTO);
