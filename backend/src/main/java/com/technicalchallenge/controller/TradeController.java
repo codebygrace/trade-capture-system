@@ -116,6 +116,9 @@ public class TradeController {
             @Valid @RequestBody TradeDTO tradeDTO) {
         logger.info("Updating trade with id: {}", id);
         try {
+            if(!id.equals(tradeDTO.getId())) {
+                return  ResponseEntity.badRequest().body("Trade ID in path must match Trade ID in request body");
+            }
             tradeDTO.setTradeId(id); // Ensure the ID matches
             Trade amendedTrade = tradeService.amendTrade(id, tradeDTO);
             TradeDTO responseDTO = tradeMapper.toDto(amendedTrade);
