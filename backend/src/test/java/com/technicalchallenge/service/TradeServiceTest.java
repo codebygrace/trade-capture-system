@@ -2,12 +2,8 @@ package com.technicalchallenge.service;
 
 import com.technicalchallenge.dto.TradeDTO;
 import com.technicalchallenge.dto.TradeLegDTO;
-import com.technicalchallenge.model.Trade;
-import com.technicalchallenge.model.TradeLeg;
-import com.technicalchallenge.repository.CashflowRepository;
-import com.technicalchallenge.repository.TradeLegRepository;
-import com.technicalchallenge.repository.TradeRepository;
-import com.technicalchallenge.repository.TradeStatusRepository;
+import com.technicalchallenge.model.*;
+import com.technicalchallenge.repository.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,6 +36,12 @@ class TradeServiceTest {
 
     @Mock
     private AdditionalInfoService additionalInfoService;
+
+    @Mock
+    BookRepository bookRepository;
+
+    @Mock
+    CounterpartyRepository counterpartyRepository;
 
     @InjectMocks
     private TradeService tradeService;
@@ -74,6 +76,17 @@ class TradeServiceTest {
     @Test
     void testCreateTrade_Success() {
         // Given
+        TradeStatus tradeStatus = new TradeStatus();
+        tradeStatus.setTradeStatus("NEW");
+
+        tradeDTO.setBookName("Test Book");
+        tradeDTO.setCounterpartyName("Test Counterparty");
+        tradeDTO.setTradeStatus("NEW");
+
+        when(bookRepository.findByBookName(anyString())).thenReturn(Optional.of(new Book()));
+        when(counterpartyRepository.findByName(anyString())).thenReturn(Optional.of(new Counterparty()));
+        when(tradeStatusRepository.findByTradeStatus(anyString())).thenReturn(Optional.of(tradeStatus));
+        when(tradeLegRepository.save(any(TradeLeg.class))).thenReturn(new TradeLeg());
         when(tradeRepository.save(any(Trade.class))).thenReturn(trade);
 
         // When
