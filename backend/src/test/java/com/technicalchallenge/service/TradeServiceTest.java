@@ -11,6 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -183,17 +184,25 @@ class TradeServiceTest {
 
     // This test has a deliberate bug for candidates to find and fix
     @Test
-    void testCashflowGeneration_MonthlySchedule() {
+    void testCashflowGeneration_MonthlySchedule() throws Exception {
         // This test method is incomplete and has logical errors
         // Candidates need to implement proper cashflow testing
 
-        // Given - setup is incomplete
+        // Given
+        Schedule monthlySchedule = new Schedule();
+        monthlySchedule.setSchedule("1M"); // creates monthly schedule
+
         TradeLeg leg = new TradeLeg();
         leg.setNotional(BigDecimal.valueOf(1000000));
+        leg.setCalculationPeriodSchedule(monthlySchedule);  // assigns schedule to the leg
 
-        // When - method call is missing
+        Method generateCashflowsMethod = TradeService.class.getDeclaredMethod("generateCashflows", TradeLeg.class, LocalDate.class,LocalDate.class); // accesses the private method
+        generateCashflowsMethod.setAccessible(true); // allows access to the private method by temporarily bypassing access rules
 
-        // Then - assertions are wrong/missing
-        assertEquals(1, 12); // This will always fail - candidates need to fix
+        // When
+        generateCashflowsMethod.invoke(tradeService,leg,tradeDTO.getTradeStartDate(),tradeDTO.getTradeMaturityDate());
+
+        // Then
+        verify(cashflowRepository, times(12)).save(any(Cashflow.class)); // checks that 12 cashflows are saved to cashflowRepository for each month from 2025-01-17 to 2026-01-17
     }
 }
