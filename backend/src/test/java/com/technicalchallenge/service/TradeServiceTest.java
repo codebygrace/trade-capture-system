@@ -2,12 +2,8 @@ package com.technicalchallenge.service;
 
 import com.technicalchallenge.dto.TradeDTO;
 import com.technicalchallenge.dto.TradeLegDTO;
-import com.technicalchallenge.model.Trade;
-import com.technicalchallenge.model.TradeLeg;
-import com.technicalchallenge.repository.CashflowRepository;
-import com.technicalchallenge.repository.TradeLegRepository;
-import com.technicalchallenge.repository.TradeRepository;
-import com.technicalchallenge.repository.TradeStatusRepository;
+import com.technicalchallenge.model.*;
+import com.technicalchallenge.repository.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,6 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -40,6 +37,12 @@ class TradeServiceTest {
 
     @Mock
     private AdditionalInfoService additionalInfoService;
+
+    @Mock
+    BookRepository bookRepository;
+
+    @Mock
+    CounterpartyRepository counterpartyRepository;
 
     @InjectMocks
     private TradeService tradeService;
@@ -74,6 +77,17 @@ class TradeServiceTest {
     @Test
     void testCreateTrade_Success() {
         // Given
+        TradeStatus tradeStatus = new TradeStatus();
+        tradeStatus.setTradeStatus("NEW");
+
+        tradeDTO.setBookName("Test Book");
+        tradeDTO.setCounterpartyName("Test Counterparty");
+        tradeDTO.setTradeStatus("NEW");
+
+        when(bookRepository.findByBookName(anyString())).thenReturn(Optional.of(new Book()));
+        when(counterpartyRepository.findByName(anyString())).thenReturn(Optional.of(new Counterparty()));
+        when(tradeStatusRepository.findByTradeStatus(anyString())).thenReturn(Optional.of(tradeStatus));
+        when(tradeLegRepository.save(any(TradeLeg.class))).thenReturn(new TradeLeg());
         when(tradeRepository.save(any(Trade.class))).thenReturn(trade);
 
         // When
@@ -96,7 +110,7 @@ class TradeServiceTest {
         });
 
         // This assertion is intentionally wrong - candidates need to fix it
-        assertEquals("Wrong error message", exception.getMessage());
+        assertEquals("Start date cannot be before trade date", exception.getMessage());
     }
 
     @Test
@@ -140,6 +154,9 @@ class TradeServiceTest {
     @Test
     void testAmendTrade_Success() {
         // Given
+        trade.setVersion(1);
+
+        when(tradeLegRepository.save(any(TradeLeg.class))).thenReturn(new TradeLeg());
         when(tradeRepository.findByTradeIdAndActiveTrue(100001L)).thenReturn(Optional.of(trade));
         when(tradeStatusRepository.findByTradeStatus("AMENDED")).thenReturn(Optional.of(new com.technicalchallenge.model.TradeStatus()));
         when(tradeRepository.save(any(Trade.class))).thenReturn(trade);
@@ -167,17 +184,25 @@ class TradeServiceTest {
 
     // This test has a deliberate bug for candidates to find and fix
     @Test
-    void testCashflowGeneration_MonthlySchedule() {
+    void testCashflowGeneration_MonthlySchedule() throws Exception {
         // This test method is incomplete and has logical errors
         // Candidates need to implement proper cashflow testing
 
-        // Given - setup is incomplete
+        // Given
+        Schedule monthlySchedule = new Schedule();
+        monthlySchedule.setSchedule("1M"); // creates monthly schedule
+
         TradeLeg leg = new TradeLeg();
         leg.setNotional(BigDecimal.valueOf(1000000));
+        leg.setCalculationPeriodSchedule(monthlySchedule);  // assigns schedule to the leg
 
-        // When - method call is missing
+        Method generateCashflowsMethod = TradeService.class.getDeclaredMethod("generateCashflows", TradeLeg.class, LocalDate.class,LocalDate.class); // accesses the private method
+        generateCashflowsMethod.setAccessible(true); // allows access to the private method by temporarily bypassing access rules
 
-        // Then - assertions are wrong/missing
-        assertEquals(1, 12); // This will always fail - candidates need to fix
+        // When
+        generateCashflowsMethod.invoke(tradeService,leg,tradeDTO.getTradeStartDate(),tradeDTO.getTradeMaturityDate());
+
+        // Then
+        verify(cashflowRepository, times(12)).save(any(Cashflow.class)); // checks that 12 cashflows are saved to cashflowRepository for each month from 2025-01-17 to 2026-01-17
     }
 }
