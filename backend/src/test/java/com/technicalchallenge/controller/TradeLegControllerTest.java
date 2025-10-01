@@ -163,7 +163,7 @@ public class TradeLegControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(tradeLegDTO)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Notional must be positive"));
+                .andExpect(jsonPath("$.notional", is("Notional must be positive")));
 
         verify(tradeLegService, never()).saveTradeLeg(any(TradeLeg.class), any(TradeLegDTO.class));
     }
