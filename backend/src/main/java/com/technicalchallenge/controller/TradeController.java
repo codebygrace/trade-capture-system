@@ -19,6 +19,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import jakarta.validation.Valid;
+
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
@@ -49,6 +51,23 @@ public class TradeController {
     public List<TradeDTO> getAllTrades() {
         logger.info("Fetching all trades");
         return tradeService.getAllTrades().stream()
+                .map(tradeMapper::toDto)
+                .toList();
+    }
+
+    // New endpoint for trade search by counterparty, book, trader, status, date ranges
+    @Operation(summary = "Search trades",
+            description = "Retrieves a list of all trades matching search criteria in the system. Returns comprehensive trade information including legs and cashflows.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved trades",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = TradeDTO.class))),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping("/search")
+    public List<TradeDTO> getTradesBySearch(@RequestParam(required = false) String counterpartyName, @RequestParam(required = false) String bookName, @RequestParam(required = false) String trader, @RequestParam(required = false) String status, @RequestParam(required = false) LocalDate tradeDateStart, @RequestParam(required = false) LocalDate tradeDateEnd) {
+        logger.info("Fetching trades matching query");
+        return tradeService.getTradesByMultiCriteria(counterpartyName, bookName, trader,status, tradeDateStart,tradeDateEnd).stream()
                 .map(tradeMapper::toDto)
                 .toList();
     }
