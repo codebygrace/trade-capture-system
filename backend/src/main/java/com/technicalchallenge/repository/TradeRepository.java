@@ -1,6 +1,8 @@
 package com.technicalchallenge.repository;
 
 import com.technicalchallenge.model.Trade;
+
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -26,4 +28,21 @@ public interface TradeRepository extends JpaRepository<Trade, Long> {
 
     @Query("SELECT t FROM Trade t WHERE t.tradeId = :tradeId AND t.active = true ORDER BY t.version DESC")
     Optional<Trade> findLatestActiveVersionByTradeId(@Param("tradeId") Long tradeId);
+
+
+    // Method for searching trades by counterparty, book, trader, status, date ranges
+    @Query("SELECT t FROM Trade t " +
+            "JOIN Counterparty c ON t.counterparty.id = c.id " +
+            "JOIN Book b ON t.book.id = b.id " +
+            "JOIN ApplicationUser a ON t.traderUser.id = a.id " +
+            "JOIN TradeStatus s ON t.tradeStatus.id = s.id " +
+            "AND (:counterpartyName IS NULL OR c.name = :counterpartyName) AND (:bookName IS NULL OR b.bookName = :bookName) " +
+            "AND (:trader IS NULL OR a.firstName = :trader) AND (:status IS NULL OR s.tradeStatus = :status) " +
+            "AND (:tradeDateStart IS NULL OR t.tradeDate >= :tradeDateStart) AND (:tradeDateEnd IS NULL OR t.tradeDate <= :tradeDateEnd)")
+    List<Trade> findByMultiCriteria(@Param("counterpartyName") String counterpartyName,
+                                    @Param("bookName") String bookName,
+                                    @Param("trader") String trader,
+                                    @Param("status") String status,
+                                    @Param("tradeDateStart")LocalDate tradeDateStart,
+                                    @Param("tradeDateEnd")LocalDate tradeDateEnd);
 }
