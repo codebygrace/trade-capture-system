@@ -36,8 +36,8 @@ public interface TradeRepository extends JpaRepository<Trade, Long> {
             "JOIN Book b ON t.book.id = b.id " +
             "JOIN ApplicationUser a ON t.traderUser.id = a.id " +
             "JOIN TradeStatus s ON t.tradeStatus.id = s.id " +
-            "AND (:counterpartyName IS NULL OR c.name = :counterpartyName) AND (:bookName IS NULL OR b.bookName = :bookName) " +
-            "AND (:trader IS NULL OR a.firstName = :trader) AND (:status IS NULL OR s.tradeStatus = :status) " +
+            "AND (:counterpartyName IS NULL OR LOWER(c.name) = LOWER(:counterpartyName)) AND (:bookName IS NULL OR LOWER(b.bookName) = LOWER(:bookName)) " +
+            "AND (:trader IS NULL OR LOWER(a.firstName) = LOWER(:trader)) AND (:status IS NULL OR LOWER(s.tradeStatus) = LOWER(:status)) " +
             "AND (:tradeDateStart IS NULL OR t.tradeDate >= :tradeDateStart) AND (:tradeDateEnd IS NULL OR t.tradeDate <= :tradeDateEnd)")
     List<Trade> findByMultiCriteria(@Param("counterpartyName") String counterpartyName,
                                     @Param("bookName") String bookName,
