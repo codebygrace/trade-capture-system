@@ -67,6 +67,11 @@ public class TradeService {
         return tradeRepository.findByTradeIdAndActiveTrue(tradeId);
     }
 
+    public List<Trade> getTradesByMultiCriteria(String counterpartyName, String bookName, String trader, String status, LocalDate tradeDateStart, LocalDate tradeDateEnd) {
+        logger.info("Retrieving trades matching criteria");
+        return tradeRepository.findByMultiCriteria(counterpartyName, bookName, trader, status, tradeDateStart, tradeDateEnd);
+    }
+
     @Transactional
     public Trade createTrade(TradeDTO tradeDTO) {
         logger.info("Creating new trade with ID: {}", tradeDTO.getTradeId());

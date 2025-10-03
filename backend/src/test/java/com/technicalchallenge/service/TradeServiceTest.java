@@ -15,6 +15,7 @@ import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -204,5 +205,24 @@ class TradeServiceTest {
 
         // Then
         verify(cashflowRepository, times(12)).save(any(Cashflow.class)); // checks that 12 cashflows are saved to cashflowRepository for each month from 2025-01-17 to 2026-01-17
+    }
+
+    @Test
+    public void testGetTradesByMultiCriteria_ByCounterparty() {
+
+        // Given
+        Counterparty counterparty = new Counterparty();
+        counterparty.setName("BigBank");
+
+        trade.setCounterparty(counterparty);
+
+        when(tradeRepository.findByMultiCriteria("BigBank",null,null,null,null,null)).thenReturn(List.of(trade));
+
+        // When
+        List<Trade> result = tradeService.getTradesByMultiCriteria("BigBank",null,null,null,null,null);
+
+        // Then
+        assertNotNull(result);
+        assertTrue(result.contains(trade));
     }
 }
