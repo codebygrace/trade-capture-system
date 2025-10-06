@@ -1,10 +1,14 @@
 package com.technicalchallenge.service;
 
 import com.technicalchallenge.dto.TradeDTO;
+import com.technicalchallenge.dto.TradeFilterDTO;
 import com.technicalchallenge.dto.TradeLegDTO;
 import com.technicalchallenge.model.*;
 import com.technicalchallenge.repository.*;
+import com.technicalchallenge.specification.TradeSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
@@ -70,6 +74,10 @@ public class TradeService {
     public List<Trade> getTradesByMultiCriteria(String counterpartyName, String bookName, String trader, String status, LocalDate tradeDateStart, LocalDate tradeDateEnd) {
         logger.info("Retrieving trades matching criteria");
         return tradeRepository.findByMultiCriteria(counterpartyName, bookName, trader, status, tradeDateStart, tradeDateEnd);
+    }
+
+    public Page<Trade> getAllTradesByFilter(TradeFilterDTO tradeFilterDTO, Pageable pageable) {
+        return tradeRepository.findAll(TradeSpecification.getSpecification(tradeFilterDTO), pageable);
     }
 
     @Transactional
