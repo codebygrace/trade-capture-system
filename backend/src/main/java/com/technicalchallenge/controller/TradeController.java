@@ -1,10 +1,14 @@
 package com.technicalchallenge.controller;
 
 import com.technicalchallenge.dto.TradeDTO;
+import com.technicalchallenge.dto.TradeFilterDTO;
 import com.technicalchallenge.mapper.TradeMapper;
 import com.technicalchallenge.model.Trade;
 import com.technicalchallenge.service.TradeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -55,7 +59,7 @@ public class TradeController {
                 .toList();
     }
 
-    // New endpoint for trade search by counterparty, book, trader, status, date ranges
+    // Handler for trade search by counterparty, book, trader, status, trade date ranges
     @Operation(summary = "Search trades",
             description = "Retrieves a list of all trades matching search criteria in the system. Returns comprehensive trade information including legs and cashflows.")
     @ApiResponses(value = {
@@ -70,6 +74,21 @@ public class TradeController {
         return tradeService.getTradesByMultiCriteria(counterpartyName, bookName, trader,status, tradeDateStart,tradeDateEnd).stream()
                 .map(tradeMapper::toDto)
                 .toList();
+    }
+
+    // Handler for trade filter by counterparty, book, trader, status, trade date ranges
+    @Operation(summary = "Filter trades",
+            description = "Retrieves a list of all trades matching filter criteria in the system. Returns comprehensive trade information including legs and cashflows.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved trades",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = TradeDTO.class))),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping("/filter")
+    public Page<TradeDTO> getAllTradesByFilter(TradeFilterDTO tradeFilterDTO, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size ) {
+        Pageable pageable = PageRequest.of(page, size);
+        return tradeService.getAllTradesByFilter(tradeFilterDTO,pageable).map(tradeMapper::toDto);
     }
 
     @GetMapping("/{id}")
