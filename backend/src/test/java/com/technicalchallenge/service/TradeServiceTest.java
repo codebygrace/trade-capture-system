@@ -1,6 +1,7 @@
 package com.technicalchallenge.service;
 
 import com.technicalchallenge.dto.TradeDTO;
+import com.technicalchallenge.dto.TradeFilterDTO;
 import com.technicalchallenge.dto.TradeLegDTO;
 import com.technicalchallenge.model.*;
 import com.technicalchallenge.repository.*;
@@ -10,6 +11,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -224,5 +230,26 @@ class TradeServiceTest {
         // Then
         assertNotNull(result);
         assertTrue(result.contains(trade));
+    }
+
+    @Test
+    public void testGetTradeByFilter_Pagination() {
+
+        // Given
+        TradeFilterDTO tradeFilterDTO = new TradeFilterDTO();
+        tradeFilterDTO.setCounterpartyName("BigBank");
+
+        Pageable pageable = PageRequest.of(0,10);
+
+        Page<Trade> resultPage = new PageImpl<>(List.of(trade),pageable,10);
+
+        when(tradeRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(resultPage);
+
+        // When
+        Page<Trade> result = tradeService.getAllTradesByFilter(tradeFilterDTO,pageable);
+
+        // Then
+        assertEquals(0, result.getNumber());
+        assertEquals(10, result.getSize());
     }
 }
