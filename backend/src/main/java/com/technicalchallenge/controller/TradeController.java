@@ -86,7 +86,7 @@ public class TradeController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/filter")
-    public Page<TradeDTO> getAllTradesByFilter(TradeFilterDTO tradeFilterDTO, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size ) {
+    public Page<TradeDTO> getAllTradesByFilter(@ModelAttribute TradeFilterDTO tradeFilterDTO, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size ) {
         Pageable pageable = PageRequest.of(page, size);
         return tradeService.getAllTradesByFilter(tradeFilterDTO,pageable).map(tradeMapper::toDto);
     }
