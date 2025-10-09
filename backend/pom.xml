@@ -57,11 +57,6 @@
 
         <!-- RSQL for dynamic queries -->
         <dependency>
-            <groupId>cz.jirutka.rsql</groupId>
-            <artifactId>rsql-parser</artifactId>
-            <version>2.1.0</version>
-        </dependency>
-        <dependency>
             <groupId>io.github.perplexhub</groupId>
             <artifactId>rsql-jpa-spring-boot-starter</artifactId>
             <version>6.0.32</version>
