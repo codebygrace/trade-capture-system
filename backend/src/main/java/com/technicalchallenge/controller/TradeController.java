@@ -78,7 +78,7 @@ public class TradeController {
 
     // Handler for trade filter by counterparty, book, trader, status, trade date ranges
     @Operation(summary = "Filter trades",
-            description = "Retrieves a list of all trades matching filter criteria in the system. Returns comprehensive trade information including legs and cashflows.")
+            description = "Retrieves pages of all trades matching filter criteria in the system. Returns comprehensive trade information including legs and cashflows.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved trades",
                     content = @Content(mediaType = "application/json",
@@ -89,6 +89,20 @@ public class TradeController {
     public Page<TradeDTO> getAllTradesByFilter(@ModelAttribute TradeFilterDTO tradeFilterDTO, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size ) {
         Pageable pageable = PageRequest.of(page, size);
         return tradeService.getAllTradesByFilter(tradeFilterDTO,pageable).map(tradeMapper::toDto);
+    }
+
+    @Operation(summary = "Query trades",
+            description = "Retrieves pages of all trades matching query criteria in the system. Returns comprehensive trade information including legs and cashflows.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved trades",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = TradeDTO.class))),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping("/rsql")
+    public Page<TradeDTO> getTradesByRsqlQuery(@RequestParam(value = "query") String query, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size ) {
+        Pageable pageable = PageRequest.of(page, size);
+        return tradeService.getTradesByRsqlQuery(query,pageable).map(tradeMapper::toDto);
     }
 
     @GetMapping("/{id}")
