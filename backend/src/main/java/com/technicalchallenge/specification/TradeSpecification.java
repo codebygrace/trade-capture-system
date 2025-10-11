@@ -35,29 +35,30 @@ public class TradeSpecification {
     }
 
     public static Specification<Trade> getSpecification(TradeFilterDTO tradeFilterDTO) {
-        Specification<Trade> spec = null;
+        Specification<Trade> spec = Specification.where(null);
 
         if (Objects.nonNull(tradeFilterDTO.getCounterpartyName())) {
-            spec =  hasCounterpartyName(tradeFilterDTO.getCounterpartyName());
+            spec =  spec.and(hasCounterpartyName(tradeFilterDTO.getCounterpartyName()));
         }
 
         if (Objects.nonNull(tradeFilterDTO.getBookName())) {
-            spec = spec == null ? hasBookName(tradeFilterDTO.getBookName()) : spec.and(hasBookName(tradeFilterDTO.getBookName()));
+            spec = spec.and(hasBookName(tradeFilterDTO.getBookName()));
         }
 
         if (Objects.nonNull(tradeFilterDTO.getTrader())) {
-            spec = spec == null ? hasTrader(tradeFilterDTO.getTrader()) : spec.and(hasTrader(tradeFilterDTO.getTrader()));
+            spec = spec.and(hasTrader(tradeFilterDTO.getTrader()));
         }
 
         if(Objects.nonNull(tradeFilterDTO.getStatus())) {
-            spec = spec == null ? hasStatus(tradeFilterDTO.getStatus()) : spec.and(hasStatus(tradeFilterDTO.getStatus()));
+            spec = spec.and(hasStatus(tradeFilterDTO.getStatus()));
         }
 
         if(Objects.nonNull(tradeFilterDTO.getTradeDateStart()) && Objects.nonNull(tradeFilterDTO.getTradeDateEnd())) {
-            spec = spec == null ? hasTradeDateBetween(tradeFilterDTO.getTradeDateStart(), tradeFilterDTO.getTradeDateEnd())
-                    : spec.and(hasTradeDateBetween(tradeFilterDTO.getTradeDateStart(), tradeFilterDTO.getTradeDateEnd()));
+            spec = spec.and(hasTradeDateBetween(tradeFilterDTO.getTradeDateStart(), tradeFilterDTO.getTradeDateEnd()));
         }
 
         return spec;
     }
+
+
 }
