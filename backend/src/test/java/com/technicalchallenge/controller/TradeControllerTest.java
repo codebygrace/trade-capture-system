@@ -3,6 +3,7 @@ package com.technicalchallenge.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.technicalchallenge.dto.TradeDTO;
+import com.technicalchallenge.dto.TradeFilterDTO;
 import com.technicalchallenge.mapper.TradeMapper;
 import com.technicalchallenge.model.Trade;
 import com.technicalchallenge.service.TradeService;
@@ -12,6 +13,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -239,5 +244,94 @@ public class TradeControllerTest {
                 .andExpect(status().isBadRequest());
 
         verify(tradeService, never()).createTrade(any(TradeDTO.class));
+    }
+
+    @Test
+    void testSearchTradeReturnsMatchingTrades() throws Exception {
+
+        // Given
+        List<Trade> trades = List.of(trade);
+        when(tradeService.getTradesByMultiCriteria("TestCounterparty", null, null, null, null, null)).thenReturn(trades);
+
+        // When & Then
+        mockMvc.perform(get("/api/trades/search")
+                        .param("counterpartyName", "TestCounterparty")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].counterpartyName", is("TestCounterparty")));
+
+        verify(tradeService).getTradesByMultiCriteria("TestCounterparty", null, null, null, null, null);
+    }
+
+    @Test
+    void testSearchTradeWhenSearchIsNullReturnsAllTrades() throws Exception {
+
+        // Given
+        List<Trade> trades = List.of(trade);
+        when(tradeService.getTradesByMultiCriteria(null, null, null, null, null, null)).thenReturn(trades);
+
+        // When & Then
+        mockMvc.perform(get("/api/trades/search")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        verify(tradeService).getTradesByMultiCriteria(null, null, null, null, null, null);
+    }
+
+    @Test
+    void testFilterTradeReturnsMatchingTrades() throws Exception {
+
+        // Given
+        TradeFilterDTO tradeFilterDTO = new TradeFilterDTO();
+        tradeFilterDTO.setCounterpartyName("TestCounterparty");
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Trade> trades = new PageImpl<> (List.of(trade),pageable,1);
+        when(tradeService.getAllTradesByFilter(tradeFilterDTO,pageable)).thenReturn(trades);
+
+        // When & Then
+        mockMvc.perform(get("/api/trades/filter")
+                        .param("counterpartyName", "TestCounterparty")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].counterpartyName", is("TestCounterparty")));
+
+        verify(tradeService).getAllTradesByFilter(tradeFilterDTO,pageable);
+    }
+
+    @Test
+    void testTradesByRsqlQueryReturnsMatchingTrades() throws Exception {
+
+        // Given
+        String query = "counterparty.name==TestCounterparty";
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Trade> trades = new PageImpl<> (List.of(trade),pageable,1);
+        when(tradeService.getTradesByRsqlQuery(query,pageable)).thenReturn(trades);
+
+        // When & Then
+        mockMvc.perform(get("/api/trades/rsql")
+                        .param("query", "counterparty.name==TestCounterparty")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].counterpartyName", is("TestCounterparty")));
+
+        verify(tradeService).getTradesByRsqlQuery(query,pageable);
+    }
+
+    @Test
+    void testTradesByRsqlQueryWhenQueryIsNullReturnsAllTrades() throws Exception {
+
+        // Given
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Trade> trades = new PageImpl<> (List.of(trade),pageable,1);
+        when(tradeService.getTradesByRsqlQuery(isNull(),any(Pageable.class))).thenReturn(trades);
+
+        // When & Then
+        mockMvc.perform(get("/api/trades/rsql")
+                        .param("page", "0")
+                        .param("size", "10")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        verify(tradeService).getTradesByRsqlQuery(isNull(),any(Pageable.class));
     }
 }
