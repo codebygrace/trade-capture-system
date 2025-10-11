@@ -100,7 +100,7 @@ public class TradeController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/rsql")
-    public Page<TradeDTO> getTradesByRsqlQuery(@RequestParam(value = "query") String query, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size ) {
+    public Page<TradeDTO> getTradesByRsqlQuery(@RequestParam(value = "query", required = false) String query, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size ) {
         Pageable pageable = PageRequest.of(page, size);
         return tradeService.getTradesByRsqlQuery(query,pageable).map(tradeMapper::toDto);
     }
