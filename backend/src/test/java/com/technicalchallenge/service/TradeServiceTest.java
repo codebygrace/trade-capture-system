@@ -59,6 +59,7 @@ class TradeServiceTest {
 
     @BeforeEach
     void setUp() {
+
         // Set up test data
         tradeDTO = new TradeDTO();
         tradeDTO.setTradeId(100001L);
@@ -251,5 +252,29 @@ class TradeServiceTest {
         // Then
         assertEquals(0, result.getNumber());
         assertEquals(10, result.getSize());
+    }
+
+    @Test
+    void testCalculateCashflowValueFor10MQuarterly3Point5Rate() throws Exception {
+
+        // Given
+        LegType fixed = new LegType();
+        fixed.setType("Fixed");
+
+        TradeLeg leg = new TradeLeg();
+        leg.setNotional(BigDecimal.valueOf(10000000));
+        leg.setRate(3.5);
+        leg.setLegRateType(fixed);
+
+        int monthsInterval = 3;
+
+        Method calculateCashflowValue = TradeService.class.getDeclaredMethod("calculateCashflowValue", TradeLeg.class, int.class);
+        calculateCashflowValue.setAccessible(true);
+
+        // When
+        BigDecimal result = (BigDecimal) calculateCashflowValue.invoke(tradeService,leg,monthsInterval);
+
+        // Then
+        assertTrue(BigDecimal.valueOf(87500).compareTo(result) == 0);
     }
 }
