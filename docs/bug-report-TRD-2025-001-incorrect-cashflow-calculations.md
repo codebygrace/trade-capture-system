@@ -74,7 +74,7 @@ private BigDecimal calculateCashflowValue(TradeLeg leg, int monthsInterval) {
     if ("Fixed".equals(legType)) {
         BigDecimal notional = leg.getNotional(); 
         BigDecimal ratePercentage = BigDecimal.valueOf(leg.getRate());
-        BigDecimal rate = ratePercentage.divide(BigDecimal.valueOf(100), RoundingMode.HALF_EVEN);
+        BigDecimal rate = ratePercentage.divide(BigDecimal.valueOf(100), 10, RoundingMode.HALF_EVEN);
         BigDecimal months = BigDecimal.valueOf(monthsInterval);
         
         return notional.multiply(rate).multiply(months).divide(BigDecimal.valueOf(12), RoundingMode.HALF_EVEN);
