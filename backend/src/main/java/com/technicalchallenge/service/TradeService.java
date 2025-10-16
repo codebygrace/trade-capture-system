@@ -1,10 +1,15 @@
 package com.technicalchallenge.service;
 
 import com.technicalchallenge.dto.TradeDTO;
+import com.technicalchallenge.dto.TradeFilterDTO;
 import com.technicalchallenge.dto.TradeLegDTO;
 import com.technicalchallenge.model.*;
 import com.technicalchallenge.repository.*;
+import com.technicalchallenge.specification.TradeSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
@@ -16,6 +21,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static io.github.perplexhub.rsql.RSQLJPASupport.toSpecification;
 
 @Service
 @Transactional
@@ -65,6 +72,22 @@ public class TradeService {
     public Optional<Trade> getTradeById(Long tradeId) {
         logger.debug("Retrieving trade by id: {}", tradeId);
         return tradeRepository.findByTradeIdAndActiveTrue(tradeId);
+    }
+
+    public List<Trade> getTradesByMultiCriteria(String counterpartyName, String bookName, String trader, String status, LocalDate tradeDateStart, LocalDate tradeDateEnd) {
+        logger.info("Retrieving trades matching criteria");
+        return tradeRepository.findByMultiCriteria(counterpartyName, bookName, trader, status, tradeDateStart, tradeDateEnd);
+    }
+
+    public Page<Trade> getAllTradesByFilter(TradeFilterDTO tradeFilterDTO, Pageable pageable) {
+        logger.info("Retrieving trades matching filter");
+        return tradeRepository.findAll(TradeSpecification.getSpecification(tradeFilterDTO), pageable);
+    }
+
+    public Page<Trade> getTradesByRsqlQuery(String query, Pageable pageable) {
+        Specification<Trade> spec = toSpecification(query);
+        logger.info("Retrieving trades matching query");
+        return tradeRepository.findAll(spec, pageable);
     }
 
     @Transactional

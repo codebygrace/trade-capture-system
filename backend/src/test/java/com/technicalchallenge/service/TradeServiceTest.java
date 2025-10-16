@@ -1,6 +1,7 @@
 package com.technicalchallenge.service;
 
 import com.technicalchallenge.dto.TradeDTO;
+import com.technicalchallenge.dto.TradeFilterDTO;
 import com.technicalchallenge.dto.TradeLegDTO;
 import com.technicalchallenge.model.*;
 import com.technicalchallenge.repository.*;
@@ -10,11 +11,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -43,6 +50,9 @@ class TradeServiceTest {
 
     @Mock
     CounterpartyRepository counterpartyRepository;
+
+    @Mock
+    Specification<Trade> specification;
 
     @InjectMocks
     private TradeService tradeService;
@@ -204,5 +214,128 @@ class TradeServiceTest {
 
         // Then
         verify(cashflowRepository, times(12)).save(any(Cashflow.class)); // checks that 12 cashflows are saved to cashflowRepository for each month from 2025-01-17 to 2026-01-17
+    }
+
+    @Test
+    public void testGetTradesByMultiCriteria_searchByCounterparty_returnsList() {
+
+        // Given
+        Counterparty counterparty = new Counterparty();
+        counterparty.setName("BigBank");
+
+        trade.setCounterparty(counterparty);
+
+        when(tradeRepository.findByMultiCriteria("BigBank",null,null,null,null,null)).thenReturn(List.of(trade));
+
+        // When
+        List<Trade> result = tradeService.getTradesByMultiCriteria("BigBank",null,null,null,null,null);
+
+        // Then
+        assertNotNull(result);
+        assertTrue(result.contains(trade));
+        verify(tradeRepository).findByMultiCriteria("BigBank",null,null,null,null,null);
+    }
+
+    @Test
+    public void testGetTradesByMultiCriteria_nullSearch_returnsAll() {
+
+        // Given
+        List<Trade> trades = List.of(trade);
+        when(tradeRepository.findByMultiCriteria(null,null,null,null,null,null)).thenReturn(trades);
+
+        // When
+        List<Trade> result = tradeService.getTradesByMultiCriteria(null,null,null,null,null,null);
+
+        // Then
+        assertNotNull(result);
+        assertTrue(result.contains(trade));
+        verify(tradeRepository).findByMultiCriteria( null,null,null,null,null,null);
+    }
+
+    @Test
+    public void testGetTradeByFilter_Pagination() {
+
+        // Given
+        TradeFilterDTO tradeFilterDTO = new TradeFilterDTO();
+        tradeFilterDTO.setCounterpartyName("BigBank");
+
+        Pageable pageable = PageRequest.of(0,10);
+
+        Page<Trade> resultPage = new PageImpl<>(List.of(trade),pageable,1);
+
+        when(tradeRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(resultPage);
+
+        // When
+        Page<Trade> result = tradeService.getAllTradesByFilter(tradeFilterDTO,pageable);
+
+        // Then
+        assertNotNull(result);
+        assertTrue(result.getContent().contains(trade));
+        assertEquals(0, result.getNumber());
+        assertEquals(10, result.getSize());
+    }
+
+    @Test
+    public void testGetTradeByFilter_nullFilter_returnsPage() {
+
+        // Given
+        TradeFilterDTO tradeFilterDTO = null;
+
+        Pageable pageable = PageRequest.of(0,10);
+
+        Page<Trade> resultPage = new PageImpl<>(List.of(trade),pageable,List.of(trade).size());
+
+        when(tradeRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(resultPage);
+
+        // When
+        Page<Trade> result = tradeService.getAllTradesByFilter(tradeFilterDTO,pageable);
+
+        // Then
+        assertNotNull(result);
+        assertTrue(result.getContent().contains(trade));
+        assertEquals(1,result.getTotalElements());
+        verify(tradeRepository).findAll(any(Specification.class), eq(pageable));
+    }
+
+    @Test
+    public void testGetTradesByRsqlQuery_stringQuery_returnsResultsPage() {
+
+        // Given
+        trade.setTradeDate(LocalDate.of(2025, 1, 15));
+
+        String query = "tradeDate=ge=2025-01-01";
+        Pageable pageable = PageRequest.of(0,10);
+        Page<Trade> resultPage = new PageImpl<>(List.of(trade),pageable,List.of(trade).size());
+
+        when(tradeRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(resultPage);
+
+        // When
+        Page<Trade> result = tradeService.getTradesByRsqlQuery(query,pageable);
+
+        // Then
+        assertNotNull(result);
+        assertTrue(result.getContent().contains(trade));
+        assertEquals(1,result.getTotalElements());
+        verify(tradeRepository).findAll(any(Specification.class), any(Pageable.class));
+    }
+
+    @Test
+    public void testGetTradesByRsqlQuery_nullQuery_returnsResultsPage() {
+
+        // Given
+        String query = null;
+        Pageable pageable = PageRequest.of(0,10);
+        Page<Trade> resultPage = new PageImpl<>(List.of(trade),pageable,List.of(trade).size());
+
+        when(tradeRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(resultPage);
+
+        // When
+        Page<Trade> result = tradeService.getTradesByRsqlQuery(query,pageable);
+
+        // Then
+        assertNotNull(result);
+        assertTrue(result.getContent().contains(trade));
+        assertEquals(1,result.getTotalElements());
+        verify(tradeRepository).findAll(any(Specification.class), eq(pageable));
     }
 }
