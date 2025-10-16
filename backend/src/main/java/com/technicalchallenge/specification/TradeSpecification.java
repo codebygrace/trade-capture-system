@@ -35,6 +35,11 @@ public class TradeSpecification {
     }
 
     public static Specification<Trade> getSpecification(TradeFilterDTO tradeFilterDTO) {
+
+        if (Objects.isNull(tradeFilterDTO)) {
+            return Specification.where(null);
+        }
+
         Specification<Trade> spec = Specification.where(null);
 
         if (Objects.nonNull(tradeFilterDTO.getCounterpartyName())) {
