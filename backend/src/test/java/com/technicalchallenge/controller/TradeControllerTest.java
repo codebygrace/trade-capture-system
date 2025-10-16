@@ -299,6 +299,27 @@ public class TradeControllerTest {
     }
 
     @Test
+    void testFilterTradeReturnsAllTradesWhenNull() throws Exception {
+
+        // Given
+        TradeFilterDTO tradeFilterDTO = new TradeFilterDTO();
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Trade> trades = new PageImpl<> (List.of(trade),pageable,1);
+        when(tradeService.getAllTradesByFilter(any(TradeFilterDTO.class),any(Pageable.class))).thenReturn(trades);
+
+        // When & Then
+        mockMvc.perform(get("/api/trades/filter")
+                        .param("page", "0")
+                        .param("size", "10")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].tradeId", is(1001)))
+                .andExpect(jsonPath("$.totalElements", is(1)));
+
+        verify(tradeService).getAllTradesByFilter(eq(tradeFilterDTO),eq(pageable));
+    }
+
+    @Test
     void testTradesByRsqlQueryReturnsMatchingTrades() throws Exception {
 
         // Given
