@@ -366,7 +366,8 @@ public class TradeControllerTest {
         String query = "counterparty.name=e=TestCounterparty";
         Pageable pageable = PageRequest.of(0, 10);
 
-        doThrow(new UnknownOperatorException("Unknown operator: =e=")).when(tradeService).getTradesByRsqlQuery(query,pageable);
+        doAnswer(invocation -> { throw new UnknownOperatorException("=e="); })
+            .when(tradeService).getTradesByRsqlQuery(query, pageable);
 
         // When & Then
         mockMvc.perform(get("/api/trades/rsql")
