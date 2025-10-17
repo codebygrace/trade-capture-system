@@ -1,17 +1,16 @@
 package com.technicalchallenge.validation;
 
+import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.Multimap;
 import lombok.Getter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @Getter
 public class ValidationResult {
 
-    private final Map<String, List<String>> errors = new HashMap<>();
+    private final Multimap<String, String> errors = LinkedListMultimap.create();
 
     public void addError(String field, String message) {
-        errors.put(field, List.of(message));
+        errors.put(field, message);
     }
 
     public boolean isValid() {
