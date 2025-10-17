@@ -3,10 +3,8 @@ package com.technicalchallenge.validation;
 import com.technicalchallenge.dto.TradeDTO;
 import com.technicalchallenge.model.Book;
 import com.technicalchallenge.model.Counterparty;
-import com.technicalchallenge.repository.ApplicationUserRepository;
 import com.technicalchallenge.repository.BookRepository;
 import com.technicalchallenge.repository.CounterpartyRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.Optional;
@@ -14,14 +12,15 @@ import java.util.Optional;
 @Service
 public class TradeValidator {
 
-    @Autowired
-    private BookRepository bookRepository;
-    @Autowired
-    private CounterpartyRepository counterpartyRepository;
-    @Autowired
-    private ApplicationUserRepository applicationUserRepository;
-    @Autowired
-    private TradeLegValidator tradeLegValidator;
+    private final BookRepository bookRepository;
+    private final CounterpartyRepository counterpartyRepository;
+    private final TradeLegValidator tradeLegValidator;
+
+    public TradeValidator(BookRepository bookRepository, CounterpartyRepository counterpartyRepository, TradeLegValidator tradeLegValidator) {
+        this.bookRepository = bookRepository;
+        this.counterpartyRepository = counterpartyRepository;
+        this.tradeLegValidator = tradeLegValidator;
+    }
 
     public ValidationResult validateTradeBusinessRules(TradeDTO tradeDTO) {
 
