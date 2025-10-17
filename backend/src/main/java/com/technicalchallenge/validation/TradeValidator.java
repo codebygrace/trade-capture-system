@@ -20,6 +20,8 @@ public class TradeValidator {
     private CounterpartyRepository counterpartyRepository;
     @Autowired
     private ApplicationUserRepository applicationUserRepository;
+    @Autowired
+    private TradeLegValidator tradeLegValidator;
 
     public ValidationResult validateTradeBusinessRules(TradeDTO tradeDTO) {
 
@@ -50,6 +52,9 @@ public class TradeValidator {
 
         if (tradeDTO.getTradeLegs() == null || tradeDTO.getTradeLegs().size() != 2) {
             result.addError("tradeLegs", "Trade legs must have exactly 2 legs");
+        } else {
+            ValidationResult legResult = tradeLegValidator.validateTradeLegConsistency(tradeDTO.getTradeLegs());
+            result.addMultipleErrors(legResult.getErrors());
         }
 
         if (tradeDTO.getBookName() != null) {
