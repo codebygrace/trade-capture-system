@@ -13,6 +13,10 @@ public class ValidationResult {
         errors.put(field, message);
     }
 
+    public void addMultipleErrors(Multimap<String, String> errorMultiMap) {
+        errors.putAll(errorMultiMap);
+    }
+
     public boolean isValid() {
         return errors.isEmpty();
     }
