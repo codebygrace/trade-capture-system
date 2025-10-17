@@ -2,6 +2,7 @@ package com.technicalchallenge.controller;
 
 import com.technicalchallenge.dto.TradeDTO;
 import com.technicalchallenge.dto.TradeFilterDTO;
+import com.technicalchallenge.exceptions.TradeValidationException;
 import com.technicalchallenge.mapper.TradeMapper;
 import com.technicalchallenge.model.Trade;
 import com.technicalchallenge.service.TradeService;
@@ -145,6 +146,9 @@ public class TradeController {
             Trade savedTrade = tradeService.saveTrade(trade, tradeDTO);
             TradeDTO responseDTO = tradeMapper.toDto(savedTrade);
             return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
+        } catch (TradeValidationException e) {
+            logger.error("Error creating trade: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().body("Invalid trade: " + e.getErrors());
         } catch (Exception e) {
             logger.error("Error creating trade: {}", e.getMessage(), e);
             return ResponseEntity.badRequest().body("Error creating trade: " + e.getMessage());
