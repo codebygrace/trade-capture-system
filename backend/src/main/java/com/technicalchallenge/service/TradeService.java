@@ -3,9 +3,12 @@ package com.technicalchallenge.service;
 import com.technicalchallenge.dto.TradeDTO;
 import com.technicalchallenge.dto.TradeFilterDTO;
 import com.technicalchallenge.dto.TradeLegDTO;
+import com.technicalchallenge.exceptions.TradeValidationException;
 import com.technicalchallenge.model.*;
 import com.technicalchallenge.repository.*;
 import com.technicalchallenge.specification.TradeSpecification;
+import com.technicalchallenge.validation.TradeValidator;
+import com.technicalchallenge.validation.ValidationResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -63,6 +66,8 @@ public class TradeService {
     private PayRecRepository payRecRepository;
     @Autowired
     private AdditionalInfoService additionalInfoService;
+    @Autowired
+    private TradeValidator tradeValidator;
 
     public List<Trade> getAllTrades() {
         logger.info("Retrieving all trades");
@@ -136,6 +141,11 @@ public class TradeService {
     @Transactional
     public Trade saveTrade(Trade trade, TradeDTO tradeDTO) {
         logger.info("Saving trade with ID: {}", trade.getTradeId());
+
+        ValidationResult validationResult = tradeValidator.validateTradeBusinessRules(tradeDTO);
+        if(!validationResult.isValid()) {
+            throw new TradeValidationException("Invalid trade: ", validationResult.getErrors());
+        }
 
         // If this is an existing trade (has ID), handle as amendment
         if (trade.getId() != null) {
