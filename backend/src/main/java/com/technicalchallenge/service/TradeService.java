@@ -583,7 +583,7 @@ public class TradeService {
             BigDecimal rate = ratePercentage.divide(BigDecimal.valueOf(100),10, RoundingMode.HALF_EVEN);
             BigDecimal months = BigDecimal.valueOf(monthsInterval);
 
-            return notional.multiply(rate).multiply(months).divide(BigDecimal.valueOf(12), RoundingMode.HALF_EVEN);
+            return notional.multiply(rate).multiply(months).divide(BigDecimal.valueOf(12),2, RoundingMode.HALF_EVEN);
         } else if ("Floating".equals(legType)) {
             return BigDecimal.ZERO;
         }
