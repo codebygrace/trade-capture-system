@@ -76,6 +76,23 @@ public class TradeController {
                 .toList();
     }
 
+    // Search trades by settlement instruction content
+    @Operation(summary = "Search trades by settlement instructions",
+            description = "Retrieves a list of all trades with settlement instructions that contain the search string. Returns comprehensive trade information including legs and cashflows.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved trades",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = TradeDTO.class))),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping("/search/settlement-instructions")
+    public ResponseEntity<List<TradeDTO>> searchBySettlementInstructions(
+            @RequestParam String instructions) {
+        logger.info("Fetching trades containing settlement instructions");
+        List<TradeDTO> tradeDTOs = tradeService.getTradesBySettlementInstructions(instructions).stream().map(tradeMapper::toDto).toList();
+        return ResponseEntity.ok().body(tradeDTOs) ;
+    }
+    
     // Handler for trade filter by counterparty, book, trader, status, trade date ranges
     @Operation(summary = "Filter trades",
             description = "Retrieves pages of all trades matching filter criteria in the system. Returns comprehensive trade information including legs and cashflows.")
