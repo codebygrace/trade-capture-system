@@ -275,6 +275,54 @@ class TradeServiceTest {
         BigDecimal result = (BigDecimal) calculateCashflowValue.invoke(tradeService,leg,monthsInterval);
 
         // Then
-        assertTrue(BigDecimal.valueOf(87500).compareTo(result) == 0);
+        assertEquals(new BigDecimal("87500.00"), result);
+    }
+
+    @Test // This tests the scenario where an infinite repeating decimal occurs
+    void testCalculateCashflowValueFor10MMonthly3Point5Rate() throws Exception {
+
+        // Given
+        LegType fixed = new LegType();
+        fixed.setType("Fixed");
+
+        TradeLeg leg = new TradeLeg();
+        leg.setNotional(BigDecimal.valueOf(10000000));
+        leg.setRate(3.5);
+        leg.setLegRateType(fixed);
+
+        int monthsInterval = 1;
+
+        Method calculateCashflowValue = TradeService.class.getDeclaredMethod("calculateCashflowValue", TradeLeg.class, int.class);
+        calculateCashflowValue.setAccessible(true);
+
+        // When
+        BigDecimal result = (BigDecimal) calculateCashflowValue.invoke(tradeService,leg,monthsInterval);
+
+        // Then
+        assertEquals(new BigDecimal("29166.67"), result);
+    }
+
+    @Test // Tests a rate with multiple decimal points
+    void testCalculateCashflowValueFor10MMonthlySmallDecimalRate() throws Exception {
+
+        // Given
+        LegType fixed = new LegType();
+        fixed.setType("Fixed");
+
+        TradeLeg leg = new TradeLeg();
+        leg.setNotional(BigDecimal.valueOf(10000000));
+        leg.setRate(0.0333333);
+        leg.setLegRateType(fixed);
+
+        int monthsInterval = 1;
+
+        Method calculateCashflowValue = TradeService.class.getDeclaredMethod("calculateCashflowValue", TradeLeg.class, int.class);
+        calculateCashflowValue.setAccessible(true);
+
+        // When
+        BigDecimal result = (BigDecimal) calculateCashflowValue.invoke(tradeService,leg,monthsInterval);
+
+        // Then
+        assertEquals(new BigDecimal("277.78"), result);
     }
 }
