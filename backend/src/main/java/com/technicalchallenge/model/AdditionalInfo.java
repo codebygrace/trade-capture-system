@@ -52,6 +52,10 @@ public class AdditionalInfo {
     @Column(name = "version", nullable = false)
     private Integer version = 1;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "trade_id", referencedColumnName = "id")
+    private Trade trade;
+
     @PreUpdate
     public void preUpdate() {
         this.lastModifiedDate = LocalDateTime.now();
