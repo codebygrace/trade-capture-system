@@ -1,5 +1,6 @@
 package com.technicalchallenge.mapper;
 
+import com.technicalchallenge.dto.AdditionalInfoDTO;
 import com.technicalchallenge.dto.TradeDTO;
 import com.technicalchallenge.dto.TradeLegDTO;
 import com.technicalchallenge.dto.CashflowDTO;
@@ -81,6 +82,14 @@ public class TradeMapper {
                     .map(this::tradeLegToDto)
                     .collect(Collectors.toList());
             dto.setTradeLegs(legDTOs);
+        }
+
+        // Map Additional info fields
+        if (trade.getAdditionalInfos() != null) {
+            List<AdditionalInfoDTO> additionalInfoDTOs = trade.getAdditionalInfos().stream()
+                    .map(additionalInfo -> modelMapper.map(additionalInfo, AdditionalInfoDTO.class))
+                    .collect(Collectors.toList());
+            dto.setAdditionalFields(additionalInfoDTOs);
         }
 
         return dto;
