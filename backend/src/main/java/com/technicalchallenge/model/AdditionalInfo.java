@@ -21,7 +21,8 @@ public class AdditionalInfo {
     private Long id;
 
     @Column(name = "entity_type", nullable = false)
-    private String entityType; // "TRADE", "COUNTERPARTY", "BOOK", etc.
+    @Enumerated(EnumType.STRING)
+    private EntityType entityType; // "TRADE", "COUNTERPARTY", "BOOK", etc.
 
     @Column(name = "entity_id", nullable = false)
     private Long entityId;
