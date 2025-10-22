@@ -8,8 +8,9 @@
 ## Executive Summary
 
 Incorrect payment values are being displayed when fixed-leg cashflows are generated. Cashflow amounts are approx. 100 times larger than expected (e.g. a \$10M trade with 3.5% rate is generating ~\$875,000 quarterly instead of ~\$87,500).
-This poses operational risks, and can result in inaccurate regulatory reporting and potential regulatory penalties as the cashflows are highly inflated. Also, varying payment amounts are being displayed for each payment date on legs (e.g. a \$10M trade with 3.5% rate has payment values \$875,000, \$884,722.22 and \$894,444.44 for different dates on the same leg).
+This poses operational risks, and can result in inaccurate regulatory reporting and potential regulatory penalties as the cashflows are highly inflated. Also, varying payment amounts are being displayed for each payment date on legs (e.g. a \$10M trade with 3.5% rate has payment values \$875,000, \$884,722.22 and \$894,444.44 for different dates on the same leg)&ast;.
 
+&ast;**Note:** For all calculations, it has been assumed that a 30/360 day-count applies and that each month is 30 days
 
 ## Technical Investigation
 
@@ -105,8 +106,10 @@ private BigDecimal calculateCashflowValue(TradeLeg leg, int monthsInterval) {
 ```
 
 **CashflowController.generateCashflows**
-1. Update `paymentValue` calculation to use months instead of days so it's aligned with (Notional × Rate × Months) ÷ 12
+1. Update `paymentValue` calculation to use months instead of days&ast; so it's aligned with (Notional × Rate × Months) ÷ 12
 2. Convert `rate` percentage to decimal (by dividing `rate` by 100) to ensure the decimal value is used in the calculation
+
+&ast;**Note:** For all calculations, it has been assumed that a 30/360 day-count applies and that each month is 30 days 
 
 Here is the code with proposed changes incorporated:
 

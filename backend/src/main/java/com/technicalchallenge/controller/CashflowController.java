@@ -141,6 +141,7 @@ public class CashflowController {
             if (months <= 0) {
                 continue;
             }
+            // Assumes that a 30/360 day-count applies and that each month is 30 days
             LocalDate valueDate = startDate;
             while (valueDate.isBefore(maturityDate)) {
                 LocalDate nextValueDate = valueDate.plusMonths(months);
