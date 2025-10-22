@@ -20,9 +20,8 @@ public class AdditionalInfo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "entity_type", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private EntityType entityType; // "TRADE", "COUNTERPARTY", "BOOK", etc.
+    @Column(name = "entity_type", nullable = false, insertable=false, updatable=false)
+    private String entityType; // "TRADE", "COUNTERPARTY", "BOOK", etc.
 
     @Column(name = "entity_id", nullable = false)
     private Long entityId;
