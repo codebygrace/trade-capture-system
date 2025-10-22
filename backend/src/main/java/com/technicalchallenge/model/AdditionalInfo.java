@@ -13,6 +13,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "entity_type",  discriminatorType = DiscriminatorType.STRING)
 @Table(name = "additional_info")
 public class AdditionalInfo {
 
