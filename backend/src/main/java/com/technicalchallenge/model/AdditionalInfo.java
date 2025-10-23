@@ -13,8 +13,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "entity_type",  discriminatorType = DiscriminatorType.STRING)
 @Table(name = "additional_info")
 public class AdditionalInfo {
 
@@ -22,7 +20,7 @@ public class AdditionalInfo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "entity_type", nullable = false, insertable=false, updatable=false)
+    @Column(name = "entity_type", nullable = false)
     private String entityType; // "TRADE", "COUNTERPARTY", "BOOK", etc.
 
     @Column(name = "entity_id", nullable = false)

@@ -38,9 +38,9 @@ INSERT INTO counterparty (id, name, address, phone_number, internal_code, create
 -- Sample Trades
 INSERT INTO trade (id, trade_id, version, book_id, counterparty_id, trader_user_id, inputter_user_id, trade_type_id, trade_sub_type_id, trade_status_id,
                    trade_date, trade_start_date, trade_maturity_date, trade_execution_date, uti_code, last_touch_timestamp, validity_start_date, validity_end_date,
-                   active, created_date, deactivated_date, additional_fields_id) VALUES
-  (1000, 100001, 1, 1000, 1000, 1003, 1003, 1001, 1003, 1004, '2024-06-01', '2024-06-03', '2029-06-03', '2024-06-01', 'UTI-001', '2024-06-01T10:30:00', '2024-06-01', null, true, '2024-06-01T10:30:00', null,1000),
-  (1001, 100002, 1, 1001, 1001, 1005, 1005, 1000, 1000, 1004, '2024-06-02', '2024-06-02', '2024-06-04', '2024-06-02', 'UTI-002', '2024-06-02T11:15:00', '2024-06-02', null, true, '2024-06-02T11:15:00', null, null);
+                   active, created_date, deactivated_date) VALUES
+  (1000, 100001, 1, 1000, 1000, 1003, 1003, 1001, 1003, 1004, '2024-06-01', '2024-06-03', '2029-06-03', '2024-06-01', 'UTI-001', '2024-06-01T10:30:00', '2024-06-01', null, true, '2024-06-01T10:30:00', null),
+  (1001, 100002, 1, 1001, 1001, 1005, 1005, 1000, 1000, 1004, '2024-06-02', '2024-06-02', '2024-06-04', '2024-06-02', 'UTI-002', '2024-06-02T11:15:00', '2024-06-02', null, true, '2024-06-02T11:15:00', null);
 
 -- Sample Trade Legs
 INSERT INTO trade_leg (leg_id, notional, rate, trade_id, currency_id, leg_rate_type_id, index_id, holiday_calendar_id,
@@ -58,6 +58,6 @@ INSERT INTO cashflow (id, payment_value, value_date, rate, leg_id, pay_rec_id, p
   (1002, 225000.00, '2024-06-04', 0.045, 1002, 1000, 1000, 1001, true, '2024-06-02T11:15:00', '2024-06-02', null);
 
 -- Sample Additional Info
-INSERT INTO additional_info (id, entity_type, entity_id, field_name, field_value, field_type,trade_id, active, created_date, last_modified_date,
+INSERT INTO additional_info (id, entity_type, entity_id, field_name, field_value, field_type, trade_id, active, created_date, last_modified_date,
                              deactivated_date, version) VALUES
-    (1000,'SETTLEMENT_INSTRUCTIONS',1001, 'settlementInstructions', 'Settle via JPM New York, Account: 123456789, Further Credit ABC Corp Trading Account', 'STRING', 1000 , true ,'2024-06-02T11:15:00', '2024-06-02T11:15:00', null, 1)
+    (1000,'TRADE',1000, 'settlementInstructions', 'Settle via JPM New York, Account: 123456789, Further Credit ABC Corp Trading Account', 'STRING', 1000 , true ,'2024-06-02T11:15:00', '2024-06-02T11:15:00', null, 1)
