@@ -89,7 +89,7 @@ public class TradeController {
     public ResponseEntity<List<TradeDTO>> searchBySettlementInstructions(
             @RequestParam String instructions) {
         logger.info("Fetching trades containing settlement instructions");
-        List<TradeDTO> tradeDTOs = tradeService.getTradesBySettlementInstructions(instructions).stream().map(tradeMapper::toDto).toList();
+        List<TradeDTO> tradeDTOs = tradeService.getTradesByAdditionalInfo(instructions).stream().map(tradeMapper::toDto).toList();
         return ResponseEntity.ok().body(tradeDTOs) ;
     }
     
