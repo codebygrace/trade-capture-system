@@ -1,5 +1,7 @@
 package com.technicalchallenge.dto;
 
+import com.technicalchallenge.model.EntityType;
+import com.technicalchallenge.model.FieldType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,11 +15,11 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class AdditionalInfoDTO {
     private Long id;
-    private String entityType;
+    private EntityType entityType;
     private Long entityId;
     private String fieldName;
     private String fieldValue;
-    private String fieldType;
+    private FieldType fieldType;
     private Boolean active;
     private LocalDateTime createdDate;
     private LocalDateTime lastModifiedDate;
