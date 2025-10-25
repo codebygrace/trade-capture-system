@@ -1,4 +1,4 @@
-package com.technicalchallenge.validation;
+package com.technicalchallenge.service.validation;
 
 import com.technicalchallenge.dto.TradeDTO;
 import com.technicalchallenge.model.Book;
@@ -9,6 +9,11 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.Optional;
 
+/**
+ * Service that validates the business rules of a {@link TradeDTO} before it is processed further.
+ * It incorporates the results of leg-specific consistency checks to {@link TradeLegValidator} and aggregates
+ * any validation errors into a {@link ValidationResult} object
+ */
 @Service
 public class TradeValidator {
 
@@ -22,6 +27,11 @@ public class TradeValidator {
         this.tradeLegValidator = tradeLegValidator;
     }
 
+    /**
+     * Validates a {@Link TradeDTO} against core business rules
+     * @param tradeDTO the trade to be validated
+     * @return a ValidationResult containing any validation errors that occur
+     */
     public ValidationResult validateTradeBusinessRules(TradeDTO tradeDTO) {
 
         ValidationResult result = new ValidationResult();
@@ -52,6 +62,8 @@ public class TradeValidator {
         if (tradeDTO.getTradeLegs() == null || tradeDTO.getTradeLegs().size() != 2) {
             result.addError("tradeLegs", "Trade legs must have exactly 2 legs");
         } else {
+
+            // Individual leg checks are delegated to TradeLegValidator
             ValidationResult legResult = tradeLegValidator.validateTradeLegConsistency(tradeDTO.getTradeLegs());
             result.addMultipleErrors(legResult.getErrors());
         }
