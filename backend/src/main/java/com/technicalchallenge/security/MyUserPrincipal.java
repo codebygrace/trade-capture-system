@@ -5,8 +5,10 @@ import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 public class MyUserPrincipal implements UserDetails {
@@ -19,7 +21,19 @@ public class MyUserPrincipal implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singleton(new SimpleGrantedAuthority("USER"));
+
+        // User privileges e.g. "BOOK_TRADE"
+        List<GrantedAuthority> authorities = applicationUser.getUserPrivileges().stream()
+                .map(privilege -> new SimpleGrantedAuthority(privilege.getPrivilege().getName()))
+                .collect(Collectors.toList());
+
+        // User role e.g. "ADMIN", "TRADER_SALES" "SUPERUSER"
+        String role = applicationUser.getUserProfile().getUserType();
+
+        // Prefix role with "ROLE_" to differentiate it from other types of authorities
+        authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
+
+        return  authorities;
     }
 
     @Override
