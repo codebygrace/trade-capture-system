@@ -28,7 +28,7 @@ public class TradeValidator {
     }
 
     /**
-     * Validates a {@Link TradeDTO} against core business rules
+     * Validates a {@link TradeDTO} against core business rules
      * @param tradeDTO the trade to be validated
      * @return a ValidationResult containing any validation errors that occur
      */
