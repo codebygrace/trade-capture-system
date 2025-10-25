@@ -1,4 +1,4 @@
-package com.technicalchallenge.exceptions;
+package com.technicalchallenge.exception;
 
 import cz.jirutka.rsql.parser.ParseException;
 import cz.jirutka.rsql.parser.UnknownOperatorException;
@@ -19,6 +19,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Centralised exception handling for all REST controllers
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -78,5 +81,15 @@ public class GlobalExceptionHandler {
                 "Invalid query format: " + e.currentToken,
                 OffsetDateTime.now());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UserPrivilegeValidationException.class)
+    public ResponseEntity<ErrorResponse> handleUserPrivilegeValidationException(UserPrivilegeValidationException e) {
+        logger.info("Insufficient user privilege - message={}", e.getMessage());
+        ErrorResponse response = new ErrorResponse(HttpStatus.FORBIDDEN.value(),
+                HttpStatus.FORBIDDEN.getReasonPhrase(),
+                "Insufficient privileges: " + e.getMessage(),
+                OffsetDateTime.now());
+        return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
     }
 }
