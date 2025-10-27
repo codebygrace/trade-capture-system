@@ -3,12 +3,14 @@ package com.technicalchallenge.service;
 import com.technicalchallenge.dto.TradeDTO;
 import com.technicalchallenge.dto.TradeFilterDTO;
 import com.technicalchallenge.dto.TradeLegDTO;
-import com.technicalchallenge.exceptions.TradeValidationException;
+import com.technicalchallenge.exception.TradeValidationException;
+import com.technicalchallenge.exception.UserPrivilegeValidationException;
 import com.technicalchallenge.model.*;
 import com.technicalchallenge.repository.*;
+import com.technicalchallenge.service.validation.UserPrivilegeValidator;
 import com.technicalchallenge.specification.TradeSpecification;
-import com.technicalchallenge.validation.TradeValidator;
-import com.technicalchallenge.validation.ValidationResult;
+import com.technicalchallenge.service.validation.TradeValidator;
+import com.technicalchallenge.service.validation.ValidationResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -68,6 +70,8 @@ public class TradeService {
     private AdditionalInfoService additionalInfoService;
     @Autowired
     private TradeValidator tradeValidator;
+    @Autowired
+    private UserPrivilegeValidator userPrivilegeValidator;
 
     public List<Trade> getAllTrades() {
         logger.info("Retrieving all trades");
@@ -140,12 +144,24 @@ public class TradeService {
     // NEW METHOD: For controller compatibility
     @Transactional
     public Trade saveTrade(Trade trade, TradeDTO tradeDTO) {
-        logger.info("Saving trade with ID: {}", trade.getTradeId());
+
+        // Grace: added validation checks here as this is the service method invoked by createTrade() in TradeController
+
+        logger.info("Validating user privileges trade");
+
+        boolean hasSufficientPrivileges = userPrivilegeValidator.validateUserPrivileges(tradeDTO.getInputterUserName(),"CREATE",tradeDTO);
+        if(!hasSufficientPrivileges) {
+            throw new UserPrivilegeValidationException("This account lacks the required privileges for this operation");
+        }
+
+        logger.info("Validating trade");
 
         ValidationResult validationResult = tradeValidator.validateTradeBusinessRules(tradeDTO);
         if(!validationResult.isValid()) {
             throw new TradeValidationException("Invalid trade: ", validationResult.getErrors());
         }
+
+        logger.info("Saving trade with ID: {}", trade.getTradeId());
 
         // If this is an existing trade (has ID), handle as amendment
         if (trade.getId() != null) {
@@ -297,6 +313,14 @@ public class TradeService {
         Optional<Trade> existingTradeOpt = getTradeById(tradeId);
         if (existingTradeOpt.isEmpty()) {
             throw new RuntimeException("Trade not found: " + tradeId);
+        }
+
+        // Grace: added validation check here as this is the service method invoked by updateTrade() in TradeController
+        logger.info("Validating user privileges");
+
+        boolean hasSufficientPrivileges = userPrivilegeValidator.validateUserPrivileges(tradeDTO.getInputterUserName(),"AMEND",tradeDTO);
+        if(!hasSufficientPrivileges) {
+            throw new UserPrivilegeValidationException("This account lacks the required privileges for this operation");
         }
 
         Trade existingTrade = existingTradeOpt.get();
