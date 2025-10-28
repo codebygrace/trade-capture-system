@@ -10,15 +10,19 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Maps ApplicationUser entity to the format Spring Security requires
+ */
 @Getter
 public class MyUserPrincipal implements UserDetails {
 
-    private ApplicationUser applicationUser;
+    private final ApplicationUser applicationUser;
 
     public MyUserPrincipal(ApplicationUser applicationUser) {
         this.applicationUser = applicationUser;
     }
 
+    // Maps ApplicationUser privileges and profile to Spring Security's GrantedAuthority
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
 
@@ -64,5 +68,9 @@ public class MyUserPrincipal implements UserDetails {
     @Override
     public boolean isEnabled() {
         return applicationUser.isActive();
+    }
+
+    public ApplicationUser getApplicationUser() {
+        return applicationUser;
     }
 }
