@@ -7,6 +7,7 @@ import com.technicalchallenge.dto.TradeFilterDTO;
 import com.technicalchallenge.mapper.TradeMapper;
 import com.technicalchallenge.model.Trade;
 import com.technicalchallenge.service.TradeService;
+import cz.jirutka.rsql.parser.UnknownOperatorException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -299,6 +300,27 @@ public class TradeControllerTest {
     }
 
     @Test
+    void testFilterTradeReturnsAllTradesWhenNull() throws Exception {
+
+        // Given
+        TradeFilterDTO tradeFilterDTO = new TradeFilterDTO();
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Trade> trades = new PageImpl<> (List.of(trade),pageable,1);
+        when(tradeService.getAllTradesByFilter(any(TradeFilterDTO.class),any(Pageable.class))).thenReturn(trades);
+
+        // When & Then
+        mockMvc.perform(get("/api/trades/filter")
+                        .param("page", "0")
+                        .param("size", "10")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].tradeId", is(1001)))
+                .andExpect(jsonPath("$.totalElements", is(1)));
+
+        verify(tradeService).getAllTradesByFilter(eq(tradeFilterDTO),eq(pageable));
+    }
+
+    @Test
     void testTradesByRsqlQueryReturnsMatchingTrades() throws Exception {
 
         // Given
@@ -330,8 +352,30 @@ public class TradeControllerTest {
                         .param("page", "0")
                         .param("size", "10")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].tradeId", is(1001)))
+                .andExpect(jsonPath("$.totalElements", is(1)));
 
         verify(tradeService).getTradesByRsqlQuery(isNull(),any(Pageable.class));
+    }
+
+    @Test
+    void testTradesByRsqlQueryInvalidOperatorReturns400AndErrorMessage() throws Exception {
+
+        // Given
+        String query = "counterparty.name=e=TestCounterparty";
+        Pageable pageable = PageRequest.of(0, 10);
+
+        doAnswer(invocation -> { throw new UnknownOperatorException("=e="); })
+            .when(tradeService).getTradesByRsqlQuery(query, pageable);
+
+        // When & Then
+        mockMvc.perform(get("/api/trades/rsql")
+                        .param("query", query)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.statusCode", is(400)))
+                .andExpect(jsonPath("$.error", is("Bad Request")))
+                .andExpect(jsonPath("$.message", is("Unknown operator: =e=")));
     }
 }
