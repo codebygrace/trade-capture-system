@@ -26,12 +26,12 @@ public class MyUserPrincipal implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
 
-        // User privileges e.g. "BOOK_TRADE"
+        // User privileges e.g. "BOOK_TRADE", "AMEND_TRADE", "READ_TRADE"
         List<GrantedAuthority> authorities = applicationUser.getUserPrivileges().stream()
                 .map(privilege -> new SimpleGrantedAuthority(privilege.getPrivilege().getName()))
                 .collect(Collectors.toList());
 
-        // User role e.g. "ADMIN", "TRADER_SALES" "SUPERUSER"
+        // User profile e.g. "ADMIN", "TRADER_SALES" "SUPERUSER"
         String role = applicationUser.getUserProfile().getUserType();
 
         // Prefix role with "ROLE_" to differentiate it from other types of authorities
@@ -68,9 +68,5 @@ public class MyUserPrincipal implements UserDetails {
     @Override
     public boolean isEnabled() {
         return applicationUser.isActive();
-    }
-
-    public ApplicationUser getApplicationUser() {
-        return applicationUser;
     }
 }
