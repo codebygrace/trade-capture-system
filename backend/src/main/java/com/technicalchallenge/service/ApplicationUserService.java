@@ -44,6 +44,7 @@ public class ApplicationUserService {
 
     public ApplicationUser saveUser(ApplicationUser user) {
         logger.info("Saving user: {}", user);
+        user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         return applicationUserRepository.save(user);
     }
 
