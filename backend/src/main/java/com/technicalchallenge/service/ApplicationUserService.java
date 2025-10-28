@@ -21,10 +21,11 @@ public class ApplicationUserService {
 
     private final ApplicationUserRepository applicationUserRepository;
 
+    // Grace: Updated so it checks for an encoded password match instead of a String match
     public boolean validateCredentials(String loginId, String password) {
         logger.debug("Validating credentials for user: {}", loginId);
         Optional<ApplicationUser> user = applicationUserRepository.findByLoginId(loginId);
-        return user.map(applicationUser -> applicationUser.getPassword().equals(password)).orElse(false);
+        return user.map(applicationUser -> bCryptPasswordEncoder.matches(password, applicationUser.getPassword())).orElse(false);
     }
 
     public List<ApplicationUser> getAllUsers() {
@@ -42,9 +43,10 @@ public class ApplicationUserService {
         return applicationUserRepository.findByLoginId(loginId);
     }
 
+    // Grace: added password encoding step
     public ApplicationUser saveUser(ApplicationUser user) {
-        logger.info("Saving user: {}", user);
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+        logger.info("Saving user: {}", user);
         return applicationUserRepository.save(user);
     }
 
