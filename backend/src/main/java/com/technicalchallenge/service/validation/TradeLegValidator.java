@@ -22,21 +22,26 @@ public class TradeLegValidator {
 
         ValidationResult result = new ValidationResult();
 
+        if (legs == null || legs.size() != 2) {
+            result.addError("tradeLegs", "Trade legs must have exactly 2 legs");
+            return result;
+        }
+
         TradeLegDTO leg1 = legs.get(0);
         TradeLegDTO leg2 = legs.get(1);
 
         // Checks if legs have opposite pay/receive flags
-        if (leg1.getPayReceiveFlag().equals(leg2.getPayReceiveFlag())) {
+        if (leg1.getPayReceiveFlag().equalsIgnoreCase(leg2.getPayReceiveFlag())) {
             result.addError("tradeLegs", "Legs must have opposite pay/receive flags");
         }
 
         // Loops through both legs to check index is specified for floating and fixed legs have a valid rate
         for (TradeLegDTO leg : legs) {
-            if (leg.getLegType().equals("Floating") && (leg.getIndexName().isBlank()) || isNull(leg.getIndexName())) {
-                result.addError("tradeLegs", "Leg must have an index specified");
+            if (leg.getLegType().equalsIgnoreCase("FLOATING") && (isNull(leg.getIndexName()) || leg.getIndexName().isBlank())) {
+                result.addError("tradeLegs", "Floating legs must have an index specified");
             }
-            if (leg.getLegType().equals("Fixed") && (leg.getRate() <= 0)) {
-                result.addError("tradeLegs", "Leg must have rate greater than 0");
+            if (leg.getLegType().equalsIgnoreCase("FIXED") && ( isNull(leg.getRate()) || leg.getRate() <= 0)){
+                result.addError("tradeLegs", "Fixed legs must have rate greater than 0");
             }
         }
 
