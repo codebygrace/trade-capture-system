@@ -40,7 +40,10 @@ public class TradeControllerIT {
 
     @BeforeEach
     public void setUp() {
-        restTemplate = new TestRestTemplate();
+
+        /* This constructs a TestRestTemplate that automatically includes HTTP Basic authentication credentials
+            for a user in the database */
+        restTemplate = new TestRestTemplate("simon", "password");
         baseUrl = baseUrl + port + "/api/trades";
 
         // verify test data is loaded correctly as it uses data.sql

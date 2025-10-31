@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -102,5 +104,15 @@ public class GlobalExceptionHandler {
                 "Insufficient privileges: " + e.getMessage(),
                 OffsetDateTime.now());
         return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler({ UsernameNotFoundException.class, BadCredentialsException.class})
+    public ResponseEntity<ErrorResponse> handleAuthenticationException(Exception e) {
+        logger.info("User not found - message={}", e.getMessage());
+        ErrorResponse response = new ErrorResponse(HttpStatus.UNAUTHORIZED.value(),
+                HttpStatus.UNAUTHORIZED.getReasonPhrase(),
+                "Username or password is incorrect",
+                OffsetDateTime.now());
+        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
     }
 }

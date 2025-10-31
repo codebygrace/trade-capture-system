@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -27,6 +28,7 @@ import java.util.Optional;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -91,6 +93,7 @@ public class TradeLegControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "SUPERUSER")
     void testGetAllTradeLegs() throws Exception {
         // Given
         List<TradeLeg> tradeLegs = Arrays.asList(tradeLeg);
@@ -109,6 +112,7 @@ public class TradeLegControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "SUPERUSER")
     void testGetTradeLegById() throws Exception {
         // Given
         when(tradeLegService.getTradeLegById(1L)).thenReturn(Optional.of(tradeLeg));
@@ -125,6 +129,7 @@ public class TradeLegControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "SUPERUSER")
     void testGetTradeLegByIdNotFound() throws Exception {
         // Given
         when(tradeLegService.getTradeLegById(999L)).thenReturn(Optional.empty());
@@ -138,12 +143,13 @@ public class TradeLegControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "SUPERUSER")
     void testCreateTradeLeg() throws Exception {
         // Given
         when(tradeLegService.saveTradeLeg(any(TradeLeg.class), any(TradeLegDTO.class))).thenReturn(tradeLeg);
 
         // When/Then
-        mockMvc.perform(post("/api/tradeLegs")
+        mockMvc.perform(post("/api/tradeLegs").with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(tradeLegDTO)))
                 .andExpect(status().isOk())
@@ -154,12 +160,13 @@ public class TradeLegControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "SUPERUSER")
     void testCreateTradeLegValidationFailure_NegativeNotional() throws Exception {
         // Given
         tradeLegDTO.setNotional(BigDecimal.valueOf(-1000000.0));
 
         // When/Then
-        mockMvc.perform(post("/api/tradeLegs")
+        mockMvc.perform(post("/api/tradeLegs").with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(tradeLegDTO)))
                 .andExpect(status().isBadRequest())
@@ -169,12 +176,13 @@ public class TradeLegControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "SUPERUSER")
     void testCreateTradeLegValidationFailure_MissingCurrency() throws Exception {
         // Given
         tradeLegDTO.setCurrency(null);
 
         // When/Then
-        mockMvc.perform(post("/api/tradeLegs")
+        mockMvc.perform(post("/api/tradeLegs").with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(tradeLegDTO)))
                 .andExpect(status().isBadRequest())
@@ -184,12 +192,13 @@ public class TradeLegControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "SUPERUSER")
     void testCreateTradeLegValidationFailure_MissingLegType() throws Exception {
         // Given
         tradeLegDTO.setLegType(null);
 
         // When/Then
-        mockMvc.perform(post("/api/tradeLegs")
+        mockMvc.perform(post("/api/tradeLegs").with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(tradeLegDTO)))
                 .andExpect(status().isBadRequest())
@@ -199,12 +208,13 @@ public class TradeLegControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "SUPERUSER")
     void testDeleteTradeLeg() throws Exception {
         // Given
         doNothing().when(tradeLegService).deleteTradeLeg(1L);
 
         // When/Then
-        mockMvc.perform(delete("/api/tradeLegs/1")
+        mockMvc.perform(delete("/api/tradeLegs/1").with(csrf())
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
 

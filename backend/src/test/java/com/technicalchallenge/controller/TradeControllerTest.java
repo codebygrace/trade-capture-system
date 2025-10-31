@@ -19,6 +19,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -30,6 +31,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -84,6 +86,7 @@ public class TradeControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "SUPERUSER")
     void testGetAllTrades() throws Exception {
         // Given
         List<Trade> trades = List.of(trade); // Fixed: use List.of instead of Arrays.asList for single item
@@ -103,6 +106,7 @@ public class TradeControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "SUPERUSER")
     void testGetTradeById() throws Exception {
         // Given
         when(tradeService.getTradeById(1001L)).thenReturn(Optional.of(trade));
@@ -119,6 +123,7 @@ public class TradeControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "SUPERUSER")
     void testGetTradeByIdNotFound() throws Exception {
         // Given
         when(tradeService.getTradeById(9999L)).thenReturn(Optional.empty());
@@ -132,13 +137,14 @@ public class TradeControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "SUPERUSER")
     void testCreateTrade() throws Exception {
         // Given
         when(tradeService.saveTrade(any(Trade.class), any(TradeDTO.class))).thenReturn(trade);
         doNothing().when(tradeService).populateReferenceDataByName(any(Trade.class), any(TradeDTO.class));
 
         // When/Then
-        mockMvc.perform(post("/api/trades")
+        mockMvc.perform(post("/api/trades").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(tradeDTO)))
                 .andExpect(status().isCreated())
@@ -149,6 +155,7 @@ public class TradeControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "SUPERUSER")
     void testCreateTradeValidationFailure_MissingTradeDate() throws Exception {
         // Given
         TradeDTO invalidDTO = new TradeDTO();
@@ -157,7 +164,7 @@ public class TradeControllerTest {
         // Trade date is purposely missing
 
         // When/Then
-        mockMvc.perform(post("/api/trades")
+        mockMvc.perform(post("/api/trades").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidDTO)))
                 .andExpect(status().isBadRequest())
@@ -167,6 +174,7 @@ public class TradeControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "SUPERUSER")
     void testCreateTradeValidationFailure_MissingBook() throws Exception {
         // Given
         TradeDTO invalidDTO = new TradeDTO();
@@ -175,7 +183,7 @@ public class TradeControllerTest {
         // Book name is purposely missing
 
         // When/Then
-        mockMvc.perform(post("/api/trades")
+        mockMvc.perform(post("/api/trades").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidDTO)))
                 .andExpect(status().isBadRequest())
@@ -185,6 +193,7 @@ public class TradeControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "SUPERUSER")
     void testUpdateTrade() throws Exception {
         // Given
         Long tradeId = 1001L;
@@ -193,7 +202,7 @@ public class TradeControllerTest {
         doNothing().when(tradeService).populateReferenceDataByName(any(Trade.class), any(TradeDTO.class));
 
         // When/Then
-        mockMvc.perform(put("/api/trades/{id}", tradeId)
+        mockMvc.perform(put("/api/trades/{id}", tradeId).with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(tradeDTO)))
                 .andExpect(status().isOk())
@@ -203,13 +212,14 @@ public class TradeControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "SUPERUSER")
     void testUpdateTradeIdMismatch() throws Exception {
         // Given
         Long pathId = 1001L;
         tradeDTO.setTradeId(2002L); // Different from path ID
 
         // When/Then
-        mockMvc.perform(put("/api/trades/{id}", pathId)
+        mockMvc.perform(put("/api/trades/{id}", pathId).with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(tradeDTO)))
                 .andExpect(status().isBadRequest())
@@ -219,12 +229,13 @@ public class TradeControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "SUPERUSER")
     void testDeleteTrade() throws Exception {
         // Given
         doNothing().when(tradeService).deleteTrade(1001L);
 
         // When/Then
-        mockMvc.perform(delete("/api/trades/1001")
+        mockMvc.perform(delete("/api/trades/1001").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
@@ -232,6 +243,7 @@ public class TradeControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "SUPERUSER")
     void testCreateTradeWithValidationErrors() throws Exception {
         // Given
         TradeDTO invalidDTO = new TradeDTO();
@@ -239,7 +251,7 @@ public class TradeControllerTest {
         // Missing required fields to trigger validation errors
 
         // When/Then
-        mockMvc.perform(post("/api/trades")
+        mockMvc.perform(post("/api/trades").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidDTO)))
                 .andExpect(status().isBadRequest());
@@ -248,6 +260,7 @@ public class TradeControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "SUPERUSER")
     void testSearchTradeReturnsMatchingTrades() throws Exception {
 
         // Given
@@ -265,6 +278,7 @@ public class TradeControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "SUPERUSER")
     void testSearchTradeWhenSearchIsNullReturnsAllTrades() throws Exception {
 
         // Given
@@ -280,6 +294,7 @@ public class TradeControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "SUPERUSER")
     void testFilterTradeReturnsMatchingTrades() throws Exception {
 
         // Given
@@ -300,6 +315,7 @@ public class TradeControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "SUPERUSER")
     void testFilterTradeReturnsAllTradesWhenNull() throws Exception {
 
         // Given
@@ -321,6 +337,7 @@ public class TradeControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "SUPERUSER")
     void testTradesByRsqlQueryReturnsMatchingTrades() throws Exception {
 
         // Given
@@ -340,6 +357,7 @@ public class TradeControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "SUPERUSER")
     void testTradesByRsqlQueryWhenQueryIsNullReturnsAllTrades() throws Exception {
 
         // Given
@@ -360,6 +378,7 @@ public class TradeControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "SUPERUSER")
     void testTradesByRsqlQueryInvalidOperatorReturns400AndErrorMessage() throws Exception {
 
         // Given
