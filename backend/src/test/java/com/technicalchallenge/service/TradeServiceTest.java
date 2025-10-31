@@ -5,6 +5,7 @@ import com.technicalchallenge.dto.TradeFilterDTO;
 import com.technicalchallenge.dto.TradeLegDTO;
 import com.technicalchallenge.model.*;
 import com.technicalchallenge.repository.*;
+import com.technicalchallenge.service.validation.UserPrivilegeValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,6 +54,9 @@ class TradeServiceTest {
 
     @Mock
     Specification<Trade> specification;
+
+    @Mock
+    UserPrivilegeValidator userPrivilegeValidator;
 
     @InjectMocks
     private TradeService tradeService;
@@ -171,6 +175,7 @@ class TradeServiceTest {
         when(tradeRepository.findByTradeIdAndActiveTrue(100001L)).thenReturn(Optional.of(trade));
         when(tradeStatusRepository.findByTradeStatus("AMENDED")).thenReturn(Optional.of(new com.technicalchallenge.model.TradeStatus()));
         when(tradeRepository.save(any(Trade.class))).thenReturn(trade);
+        when(userPrivilegeValidator.validateUserPrivileges(any(), eq("AMEND"), any(TradeDTO.class))).thenReturn(true);
 
         // When
         Trade result = tradeService.amendTrade(100001L, tradeDTO);
