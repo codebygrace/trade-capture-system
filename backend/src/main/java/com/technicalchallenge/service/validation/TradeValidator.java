@@ -69,20 +69,20 @@ public class TradeValidator {
         }
 
         if (tradeDTO.getBookName() != null) {
-            Optional<Book> book = (bookRepository.findByBookName(tradeDTO.getBookName()));
-            Book foundBook = book.orElse(null);
-            assert foundBook != null;
-            if(!foundBook.isActive()) {
-                result.addError("Book", "Counterparty must be active");
+            Optional<Book> book = bookRepository.findByBookName(tradeDTO.getBookName());
+            if (book.isEmpty()) {
+                result.addError("book", "Book not found: " + tradeDTO.getBookName());
+            } else if (!book.get().isActive()) {
+                result.addError("book", "Book must be active");
             }
         }
 
         if (tradeDTO.getCounterpartyName() != null) {
             Optional<Counterparty> counterparty = counterpartyRepository.findByName(tradeDTO.getCounterpartyName());
-            Counterparty foundCounterparty = counterparty.orElse(null);
-            assert foundCounterparty != null;
-            if(!foundCounterparty.isActive())  {
-                result.addError("Counterparty", "Counterparty must be active");
+            if (counterparty.isEmpty()) {
+                result.addError("counterparty", "Counterparty not found: " + tradeDTO.getCounterpartyName());
+            } else if (!counterparty.get().isActive()) {
+                result.addError("counterparty", "Counterparty must be active");
             }
         }
 
