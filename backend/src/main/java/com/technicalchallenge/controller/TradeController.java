@@ -2,6 +2,8 @@ package com.technicalchallenge.controller;
 
 import com.technicalchallenge.dto.TradeDTO;
 import com.technicalchallenge.dto.TradeFilterDTO;
+import com.technicalchallenge.exception.TradeValidationException;
+import com.technicalchallenge.exception.UserPrivilegeValidationException;
 import com.technicalchallenge.mapper.TradeMapper;
 import com.technicalchallenge.model.Trade;
 import com.technicalchallenge.service.TradeService;
@@ -133,6 +135,7 @@ public class TradeController {
                     content = @Content(mediaType = "application/json",
                                      schema = @Schema(implementation = TradeDTO.class))),
         @ApiResponse(responseCode = "400", description = "Invalid trade data or business rule violation"),
+            @ApiResponse(responseCode = "403", description = "Insufficient privileges to create a trade"),
         @ApiResponse(responseCode = "500", description = "Internal server error during trade creation")
     })
     public ResponseEntity<?> createTrade(
@@ -145,6 +148,12 @@ public class TradeController {
             Trade savedTrade = tradeService.saveTrade(trade, tradeDTO);
             TradeDTO responseDTO = tradeMapper.toDto(savedTrade);
             return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
+        } catch (UserPrivilegeValidationException e) {
+            logger.error("Insufficient user privileges", e);
+            return ResponseEntity.status(403).body(e.getMessage());
+        } catch (TradeValidationException e) {
+            logger.error("Error creating trade: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().body("Invalid trade: " + e.getErrors());
         } catch (Exception e) {
             logger.error("Error creating trade: {}", e.getMessage(), e);
             return ResponseEntity.badRequest().body("Error creating trade: " + e.getMessage());
@@ -176,6 +185,9 @@ public class TradeController {
             Trade amendedTrade = tradeService.amendTrade(id, tradeDTO);
             TradeDTO responseDTO = tradeMapper.toDto(amendedTrade);
             return ResponseEntity.ok(responseDTO);
+        } catch (UserPrivilegeValidationException e) {
+            logger.error("Insufficient user privileges", e);
+            return ResponseEntity.status(403).body(e.getMessage());
         } catch (Exception e) {
             logger.error("Error updating trade: {}", e.getMessage(), e);
             return ResponseEntity.badRequest().body("Error updating trade: " + e.getMessage());
