@@ -10,13 +10,12 @@ import java.util.Map;
 public class TradeSummaryDTO {
 
     // Total number of trades by status
-    Map<String,Integer> totalTradesByStatus;
+    Map<String,Long> totalTradesByStatus;
 
     // Total notional amounts by currency
     Map<String,BigDecimal> totalNotionalByCurrency;
 
-    // Breakdown by trade type and counterparty
-    Map<String, String> tradesByTypeByCounterparty;
+    // Breakdown count of trades by trade type and counterparty
+    Map<String, Map<String, Long>> tradesByTypeByCounterparty;
 
-    // Risk exposure summaries //TODO - confirm what the requirement is
 }
