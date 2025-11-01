@@ -28,4 +28,11 @@ public class TradeReportingService {
         logger.debug("Retrieving trades for: {}", userDetails.getUsername());
         return tradeRepository.findByTrader(userDetails.getUsername());
     }
+
+    // For Book-level trade aggregation
+    public List<Trade> getTradesByBookId(Long bookId) {
+        logger.debug("Retrieving trades for book with ID: {}", bookId);
+        return tradeRepository.findByBookId(bookId);
+    }
+
 }

@@ -4,7 +4,6 @@ import com.technicalchallenge.model.Trade;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -53,4 +52,6 @@ public interface TradeRepository extends JpaRepository<Trade, Long>, JpaSpecific
     @Query("SELECT t FROM Trade t WHERE t.traderUser.loginId = :loginId")
     List<Trade> findByTrader(@Param("loginId") String loginId);
 
+    // Method for finding trades for a book with the given bookId
+    List<Trade> findByBookId(@Param("bookId") Long bookId);
 }

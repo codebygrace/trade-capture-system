@@ -151,6 +151,25 @@ public class TradeController {
         return ResponseEntity.ok(responseDTO);
     }
 
+    // Handler for Book-level trade aggregation
+    @GetMapping("/book/{id}/trades")
+    @Operation(summary = "Get trades by book",
+            description = "Retrieves a list of all trades for book matching the ID provided. Returns comprehensive trade information including legs and cashflows.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved all trades for the book",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = TradeDTO.class))),
+            @ApiResponse(responseCode = "401", description = "Login required to view trades"),
+            @ApiResponse(responseCode = "403", description = "Insufficient privileges to view trades"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<List<TradeDTO>> getTradesByBook(@PathVariable(name = "id") Long id) {
+        logger.info("Fetching all trades for book with ID: {} ", id);
+        List<Trade> trades = tradeReportingService.getTradesByBookId(id);
+        List<TradeDTO> responseDTO = trades.stream().map(tradeMapper::toDto).toList();
+        return ResponseEntity.ok(responseDTO);
+    }
+
     @PostMapping
     @Operation(summary = "Create new trade",
                description = "Creates a new trade with the provided details. Automatically generates cashflows and validates business rules.")
