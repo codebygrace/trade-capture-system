@@ -7,12 +7,15 @@ import com.technicalchallenge.exception.UserPrivilegeValidationException;
 import com.technicalchallenge.mapper.TradeMapper;
 import com.technicalchallenge.model.Trade;
 import com.technicalchallenge.service.TradeService;
+import com.technicalchallenge.service.TradeReportingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,6 +47,8 @@ public class TradeController {
     private TradeService tradeService;
     @Autowired
     private TradeMapper tradeMapper;
+    @Autowired
+    TradeReportingService tradeReportingService;
 
     @GetMapping
     @Operation(summary = "Get all trades",
@@ -125,6 +130,25 @@ public class TradeController {
                 .map(tradeMapper::toDto)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    // Handler for Trader's personal trades
+    @GetMapping("/my-trades")
+    @Operation(summary = "Get my trades",
+            description = "Retrieves a list of all trades for current application user. Returns comprehensive trade information including legs and cashflows.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved all trades for the user",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = TradeDTO.class))),
+            @ApiResponse(responseCode = "401", description = "Login required to view trades"),
+            @ApiResponse(responseCode = "403", description = "Insufficient privileges to view trades"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<List<TradeDTO>> getMyTrades(@AuthenticationPrincipal UserDetails userDetails) {
+        logger.info("Fetching all trades for: {} ", userDetails.getUsername());
+        List<Trade> trades = tradeReportingService.getTradesByTrader(userDetails);
+        List<TradeDTO> responseDTO = trades.stream().map(tradeMapper::toDto).toList();
+        return ResponseEntity.ok(responseDTO);
     }
 
     @PostMapping
