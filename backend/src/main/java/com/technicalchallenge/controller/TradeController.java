@@ -2,6 +2,7 @@ package com.technicalchallenge.controller;
 
 import com.technicalchallenge.dto.TradeDTO;
 import com.technicalchallenge.dto.TradeFilterDTO;
+import com.technicalchallenge.dto.TradeSummaryDTO;
 import com.technicalchallenge.exception.TradeValidationException;
 import com.technicalchallenge.exception.UserPrivilegeValidationException;
 import com.technicalchallenge.mapper.TradeMapper;
@@ -168,6 +169,25 @@ public class TradeController {
         List<Trade> trades = tradeReportingService.getTradesByBookId(id);
         List<TradeDTO> responseDTO = trades.stream().map(tradeMapper::toDto).toList();
         return ResponseEntity.ok(responseDTO);
+    }
+
+    // Handler for trade portfolio summaries
+    @GetMapping("/summary")
+    @Operation(summary = "Get trade summary statistics",
+            description = "Retrieves trade summary statistics for an authenticated user. This only displays statistical data for trades they own.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved trade summary statistics"),
+            @ApiResponse(responseCode = "401", description = "Authentication required to view data"),
+            @ApiResponse(responseCode = "403", description = "Insufficient privileges to view data"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<TradeSummaryDTO> getSummary(@AuthenticationPrincipal UserDetails userDetails) {
+
+        TradeSummaryDTO tradeSummaryDTO = new TradeSummaryDTO();
+        tradeSummaryDTO.setTotalTradesByStatus(tradeReportingService.totalTradesByStatus(userDetails));
+        tradeSummaryDTO.setTotalNotionalByCurrency(tradeReportingService.totalNotionalAmountsByCurrency(userDetails));
+        tradeSummaryDTO.setTradesByTypeByCounterparty(tradeReportingService.totalTradesByTradeTypeAndCounterparty(userDetails));
+        return ResponseEntity.ok(tradeSummaryDTO);
     }
 
     @PostMapping
