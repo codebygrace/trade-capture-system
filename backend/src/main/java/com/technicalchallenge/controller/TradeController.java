@@ -1,5 +1,6 @@
 package com.technicalchallenge.controller;
 
+import com.technicalchallenge.dto.DailySummaryDTO;
 import com.technicalchallenge.dto.TradeDTO;
 import com.technicalchallenge.dto.TradeFilterDTO;
 import com.technicalchallenge.dto.TradeSummaryDTO;
@@ -188,6 +189,16 @@ public class TradeController {
         tradeSummaryDTO.setTotalNotionalByCurrency(tradeReportingService.totalNotionalAmountsByCurrency(userDetails));
         tradeSummaryDTO.setTradesByTypeByCounterparty(tradeReportingService.totalTradesByTradeTypeAndCounterparty(userDetails));
         return ResponseEntity.ok(tradeSummaryDTO);
+    }
+
+    // Handler for daily summary
+    @GetMapping("/daily-summary")
+    public ResponseEntity<DailySummaryDTO> getDailySummary(@AuthenticationPrincipal UserDetails userDetails) {
+        DailySummaryDTO dailySummaryDTO = new DailySummaryDTO();
+        dailySummaryDTO.setTradeCountToday(tradeReportingService.tradeCountForDate(userDetails, LocalDate.now()));
+        dailySummaryDTO.setTradeCountYesterday(tradeReportingService.tradeCountForDate(userDetails, LocalDate.now().minusDays(1)));
+
+        return ResponseEntity.ok(dailySummaryDTO);
     }
 
     @PostMapping

@@ -6,16 +6,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 
 @Service
-@Transactional
 public class TradeReportingService {
 
     private static final Logger logger = LoggerFactory.getLogger(TradeReportingService.class);
@@ -61,6 +60,12 @@ public class TradeReportingService {
         return userTrades.stream()
                 .collect(Collectors.groupingBy(trade -> trade.getTradeType().getTradeType(),
                         Collectors.groupingBy(trade -> trade.getCounterparty().getName(), Collectors.counting())));
+    }
+
+    // Trade counter for daily summary
+    public long tradeCountForDate(UserDetails userDetails, LocalDate tradeDate) {
+        logger.info("Retrieving trade count for {} for: {}",tradeDate, userDetails.getUsername());
+        return tradeRepository.countTradeByTraderAndTradeDate(userDetails.getUsername(), LocalDate.now());
     }
 
 }

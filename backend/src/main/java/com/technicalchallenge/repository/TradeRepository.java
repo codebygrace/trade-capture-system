@@ -54,4 +54,9 @@ public interface TradeRepository extends JpaRepository<Trade, Long>, JpaSpecific
 
     // Method for finding trades for a book with the given bookId
     List<Trade> findByBookId(@Param("bookId") Long bookId);
+
+    // Method for counting trades for a given loginId and tradeDate
+    @Query("SELECT COUNT(t) FROM Trade t WHERE t.traderUser.loginId = :loginId AND t.tradeDate = :tradeDate")
+    long countTradeByTraderAndTradeDate(@Param("loginId") String loginId, @Param("tradeDate") LocalDate tradeDate);
+
 }
