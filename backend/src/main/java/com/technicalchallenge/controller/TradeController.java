@@ -1,11 +1,15 @@
 package com.technicalchallenge.controller;
 
+import com.technicalchallenge.dto.AdditionalInfoDTO;
+import com.technicalchallenge.dto.SettlementInstructionsUpdateDTO;
 import com.technicalchallenge.dto.TradeDTO;
 import com.technicalchallenge.dto.TradeFilterDTO;
 import com.technicalchallenge.exception.TradeValidationException;
 import com.technicalchallenge.exception.UserPrivilegeValidationException;
+import com.technicalchallenge.mapper.SettlementInstructionsMapper;
 import com.technicalchallenge.mapper.TradeMapper;
 import com.technicalchallenge.model.Trade;
+import com.technicalchallenge.service.AdditionalInfoService;
 import com.technicalchallenge.service.TradeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -44,6 +48,14 @@ public class TradeController {
     private TradeService tradeService;
     @Autowired
     private TradeMapper tradeMapper;
+
+    private final AdditionalInfoService additionalInfoService;
+    @Autowired
+    private SettlementInstructionsMapper settlementInstructionsMapper;
+
+    public TradeController(AdditionalInfoService additionalInfoService) {
+        this.additionalInfoService = additionalInfoService;
+    }
 
     @GetMapping
     @Operation(summary = "Get all trades",
@@ -208,6 +220,35 @@ public class TradeController {
         } catch (Exception e) {
             logger.error("Error updating trade: {}", e.getMessage(), e);
             return ResponseEntity.badRequest().body("Error updating trade: " + e.getMessage());
+        }
+    }
+
+   // Update settlement instructions for trades
+    @PutMapping("/{id}/settlement-instructions")
+    @Operation(summary = "Update trade settlement instructions",
+            description = "Updates trade settlement instructions with new information. Subject to business rule validation and user privileges.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Settlement instructions updated successfully",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = SettlementInstructionsUpdateDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Trade not found"),
+            @ApiResponse(responseCode = "400", description = "Invalid data or business rule violation"),
+            @ApiResponse(responseCode = "403", description = "Insufficient privileges to update instructions")
+    })
+    public ResponseEntity<?> updateSettlementInstructions(
+            @Parameter(description = "Unique identifier of the trade to update", required = true)
+            @PathVariable Long id,
+            @Parameter(description = "Updated trade settlement instructions")
+            @Valid @RequestBody SettlementInstructionsUpdateDTO request) {
+        logger.info("Updating settlement instructions for trade with id: {}", id);
+        try {
+            request.setEntityId(id);
+            AdditionalInfoDTO dto = settlementInstructionsMapper.toDto(request);
+            AdditionalInfoDTO amendedInstructions = additionalInfoService.updateAdditionalInfo(dto);
+            return ResponseEntity.ok(settlementInstructionsMapper.toRequest(amendedInstructions));
+        } catch (Exception e) {
+            logger.error("Error updating trade settlement instructions: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().body("Error updating trade settlement instructions: " + e.getMessage());
         }
     }
 
