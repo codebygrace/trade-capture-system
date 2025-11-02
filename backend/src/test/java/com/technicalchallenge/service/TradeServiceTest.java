@@ -5,6 +5,7 @@ import com.technicalchallenge.dto.TradeFilterDTO;
 import com.technicalchallenge.dto.TradeLegDTO;
 import com.technicalchallenge.model.*;
 import com.technicalchallenge.repository.*;
+import com.technicalchallenge.service.validation.UserPrivilegeValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -54,6 +55,9 @@ class TradeServiceTest {
     @Mock
     Specification<Trade> specification;
 
+    @Mock
+    UserPrivilegeValidator userPrivilegeValidator;
+
     @InjectMocks
     private TradeService tradeService;
 
@@ -62,6 +66,7 @@ class TradeServiceTest {
 
     @BeforeEach
     void setUp() {
+
         // Set up test data
         tradeDTO = new TradeDTO();
         tradeDTO.setTradeId(100001L);
@@ -170,6 +175,7 @@ class TradeServiceTest {
         when(tradeRepository.findByTradeIdAndActiveTrue(100001L)).thenReturn(Optional.of(trade));
         when(tradeStatusRepository.findByTradeStatus("AMENDED")).thenReturn(Optional.of(new com.technicalchallenge.model.TradeStatus()));
         when(tradeRepository.save(any(Trade.class))).thenReturn(trade);
+        when(userPrivilegeValidator.validateUserPrivileges(any(), eq("AMEND"), any(TradeDTO.class))).thenReturn(true);
 
         // When
         Trade result = tradeService.amendTrade(100001L, tradeDTO);
@@ -337,5 +343,77 @@ class TradeServiceTest {
         assertTrue(result.getContent().contains(trade));
         assertEquals(1,result.getTotalElements());
         verify(tradeRepository).findAll(any(Specification.class), eq(pageable));
+    }
+
+    @Test
+    void testCalculateCashflowValueFor10MQuarterly3Point5Rate() throws Exception {
+
+        // Given
+        LegType fixed = new LegType();
+        fixed.setType("Fixed");
+
+        TradeLeg leg = new TradeLeg();
+        leg.setNotional(BigDecimal.valueOf(10000000));
+        leg.setRate(3.5);
+        leg.setLegRateType(fixed);
+
+        int monthsInterval = 3;
+
+        Method calculateCashflowValue = TradeService.class.getDeclaredMethod("calculateCashflowValue", TradeLeg.class, int.class);
+        calculateCashflowValue.setAccessible(true);
+
+        // When
+        BigDecimal result = (BigDecimal) calculateCashflowValue.invoke(tradeService,leg,monthsInterval);
+
+        // Then
+        assertEquals(new BigDecimal("87500.00"), result);
+    }
+
+    @Test // This tests the scenario where an infinite repeating decimal occurs
+    void testCalculateCashflowValueFor10MMonthly3Point5Rate() throws Exception {
+
+        // Given
+        LegType fixed = new LegType();
+        fixed.setType("Fixed");
+
+        TradeLeg leg = new TradeLeg();
+        leg.setNotional(BigDecimal.valueOf(10000000));
+        leg.setRate(3.5);
+        leg.setLegRateType(fixed);
+
+        int monthsInterval = 1;
+
+        Method calculateCashflowValue = TradeService.class.getDeclaredMethod("calculateCashflowValue", TradeLeg.class, int.class);
+        calculateCashflowValue.setAccessible(true);
+
+        // When
+        BigDecimal result = (BigDecimal) calculateCashflowValue.invoke(tradeService,leg,monthsInterval);
+
+        // Then
+        assertEquals(new BigDecimal("29166.67"), result);
+    }
+
+    @Test // Tests a rate with multiple decimal points
+    void testCalculateCashflowValueFor10MMonthlySmallDecimalRate() throws Exception {
+
+        // Given
+        LegType fixed = new LegType();
+        fixed.setType("Fixed");
+
+        TradeLeg leg = new TradeLeg();
+        leg.setNotional(BigDecimal.valueOf(10000000));
+        leg.setRate(0.0333333);
+        leg.setLegRateType(fixed);
+
+        int monthsInterval = 1;
+
+        Method calculateCashflowValue = TradeService.class.getDeclaredMethod("calculateCashflowValue", TradeLeg.class, int.class);
+        calculateCashflowValue.setAccessible(true);
+
+        // When
+        BigDecimal result = (BigDecimal) calculateCashflowValue.invoke(tradeService,leg,monthsInterval);
+
+        // Then
+        assertEquals(new BigDecimal("277.78"), result);
     }
 }
