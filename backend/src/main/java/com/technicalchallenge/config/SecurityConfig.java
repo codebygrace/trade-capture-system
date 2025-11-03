@@ -14,12 +14,10 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
-import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 import java.util.List;
 
 @Configuration
@@ -50,10 +48,6 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
-        // sets up components for URL pattern matching
-        HandlerMappingIntrospector introspector = new HandlerMappingIntrospector();
-        MvcRequestMatcher.Builder mvcMatcher = new MvcRequestMatcher.Builder(introspector);
 
         return http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
