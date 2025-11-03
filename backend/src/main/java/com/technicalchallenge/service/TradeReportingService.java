@@ -56,6 +56,7 @@ public class TradeReportingService {
 
     // Breakdown count of trades by trade type and counterparty
     public Map<String, Map<String, Long>> totalTradesByTradeTypeAndCounterparty(UserDetails userDetails) {
+        logger.info("Retrieving breakdown count of trades by trade type and counterparty for: {} ", userDetails.getUsername());
         List<Trade> userTrades = tradeRepository.findByTraderAndActiveTrue(userDetails.getUsername());
         return userTrades.stream()
                 .collect(Collectors.groupingBy(trade -> trade.getTradeType().getTradeType(),
@@ -68,4 +69,13 @@ public class TradeReportingService {
         return tradeRepository.countTradeByTraderAndTradeDate(userDetails.getUsername(), LocalDate.now());
     }
 
+    // Total sum of notional amounts for daily summary
+    public BigDecimal notionalAmountForDate(UserDetails userDetails, LocalDate tradeDate) {
+        logger.info("Retrieving total notional amount for {} for: {}",tradeDate, userDetails.getUsername());
+        List<Trade> userTrades = tradeRepository.findByTraderAndActiveTrue(userDetails.getUsername());
+        return userTrades.stream().filter(trade -> trade.getTradeDate().equals(tradeDate))
+                .flatMap(trade -> trade.getTradeLegs().stream())
+                .map(TradeLeg::getNotional)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
 }

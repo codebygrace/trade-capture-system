@@ -197,6 +197,8 @@ public class TradeController {
         DailySummaryDTO dailySummaryDTO = new DailySummaryDTO();
         dailySummaryDTO.setTradeCountToday(tradeReportingService.tradeCountForDate(userDetails, LocalDate.now()));
         dailySummaryDTO.setTradeCountYesterday(tradeReportingService.tradeCountForDate(userDetails, LocalDate.now().minusDays(1)));
+        dailySummaryDTO.setNotionalAmountToday(tradeReportingService.notionalAmountForDate(userDetails, LocalDate.now()));
+        dailySummaryDTO.setNotionalAmountYesterday(tradeReportingService.notionalAmountForDate(userDetails, LocalDate.now().minusDays(1)));
 
         return ResponseEntity.ok(dailySummaryDTO);
     }
