@@ -66,7 +66,7 @@ public class TradeReportingService {
     // Trade counter for daily summary
     public long tradeCountForDate(UserDetails userDetails, LocalDate tradeDate) {
         logger.info("Retrieving trade count for {} for: {}",tradeDate, userDetails.getUsername());
-        return tradeRepository.countTradeByTraderAndTradeDate(userDetails.getUsername(), LocalDate.now());
+        return tradeRepository.countTradeByTraderAndTradeDate(userDetails.getUsername(), tradeDate);
     }
 
     // Total sum of notional amounts for daily summary
