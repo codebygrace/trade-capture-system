@@ -40,7 +40,9 @@ INSERT INTO trade (id, trade_id, version, book_id, counterparty_id, trader_user_
                    trade_date, trade_start_date, trade_maturity_date, trade_execution_date, uti_code, last_touch_timestamp, validity_start_date, validity_end_date,
                    active, created_date, deactivated_date) VALUES
   (1000, 100001, 1, 1000, 1000, 1003, 1003, 1001, 1003, 1004, '2024-06-01', '2024-06-03', '2029-06-03', '2024-06-01', 'UTI-001', '2024-06-01T10:30:00', '2024-06-01', null, true, '2024-06-01T10:30:00', null),
-  (1001, 100002, 1, 1001, 1001, 1005, 1005, 1000, 1000, 1004, '2024-06-02', '2024-06-02', '2024-06-04', '2024-06-02', 'UTI-002', '2024-06-02T11:15:00', '2024-06-02', null, true, '2024-06-02T11:15:00', null);
+  (1001, 100002, 1, 1001, 1001, 1005, 1005, 1000, 1000, 1004, '2024-06-02', '2024-06-02', '2024-06-04', '2024-06-02', 'UTI-002', '2024-06-02T11:15:00', '2024-06-02', null, true, '2024-06-02T11:15:00', null),
+(2000, 200001, 1, 1000, 1001, 1003, 1003, 1001, 1003, 1001, CURRENT_DATE, DATEADD('DAY', 1, CURRENT_DATE), DATEADD('YEAR', 1, CURRENT_DATE), CURRENT_DATE, 'UTI-101', '2024-06-01T10:30:00', '2024-06-01', null, true, '2024-06-01T10:30:00', null),
+  (2001, 200002, 1, 1001, 1000, 1005, 1005, 1000, 1000, 1001, CURRENT_DATE, DATEADD('DAY', 1, CURRENT_DATE), DATEADD('YEAR', 1, CURRENT_DATE), CURRENT_DATE, 'UTI-102', '2024-06-02T11:15:00', '2024-06-02', null, true, '2024-06-02T11:15:00', null);
 
 -- Sample Trade Legs
 INSERT INTO trade_leg (leg_id, notional, rate, trade_id, currency_id, leg_rate_type_id, index_id, holiday_calendar_id,
@@ -48,7 +50,10 @@ INSERT INTO trade_leg (leg_id, notional, rate, trade_id, currency_id, leg_rate_t
                        active, created_date, deactivated_date) VALUES
   (1000, 1000000.00, 0.05, 1000, 1000, 1000, null, 1000, 1001, 1000, 1000, 1000, true, '2024-06-01T10:30:00', null),
   (1001, 1000000.00, 0.0, 1000, 1000, 1001, 1000, 1000, 1001, 1000, 1000, 1001, true, '2024-06-01T10:30:00', null),
-  (1002, 5000000.00, 0.045, 1001, 1001, 1000, null, 1001, 1000, 1001, 1001, 1000, true, '2024-06-02T11:15:00', null);
+  (1002, 5000000.00, 0.045, 1001, 1001, 1000, null, 1001, 1000, 1001, 1001, 1000, true, '2024-06-02T11:15:00', null),
+(2000, 1000000.00, 0.05, 2000, 1001, 1000, null, 1000, 1001, 1000, 1000, 1000, true, '2024-06-01T10:30:00', null),
+  (2001, 1000000.00, 0.0, 2000, 1001, 1001, 1000, 1000, 1001, 1000, 1000, 1001, true, '2024-06-01T10:30:00', null),
+  (2002, 5000000.00, 0.045, 2001, 1000, 1000, null, 1001, 1000, 1001, 1001, 1000, true, '2024-06-02T11:15:00', null);
 
 -- Sample Cashflows
 INSERT INTO cashflow (id, payment_value, value_date, rate, leg_id, pay_rec_id, payment_type_id, payment_business_day_convention_id,

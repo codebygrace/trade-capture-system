@@ -200,8 +200,13 @@ public class TradeControllerIT {
     void testSearchByNullReturnsAll() {
         List<TradeDTO> trades = searchTrades("");
 
+        // Used to check total number of trades
+        ResponseEntity<List<TradeDTO>> allTrades = restTemplate.exchange(
+                baseUrl, HttpMethod.GET, null, new ParameterizedTypeReference<>() {});
+
         assertFalse(trades.isEmpty());
-        assertEquals(2, trades.size());
+        assertNotNull(allTrades.getBody());
+        assertEquals(allTrades.getBody().size(), trades.size());
     }
 
     @Test
@@ -344,8 +349,13 @@ public class TradeControllerIT {
     void testFilterByNullReturnsAll() {
         Page<TradeDTO> trades = filterTrades("");
 
+        // Used to check total number of trades
+        ResponseEntity<List<TradeDTO>> allTrades = restTemplate.exchange(
+                baseUrl, HttpMethod.GET, null, new ParameterizedTypeReference<>() {});
+
         assertFalse(trades.isEmpty());
-        assertEquals(2, trades.getContent().size());
+        assertNotNull(allTrades.getBody());
+        assertEquals(allTrades.getBody().size(), trades.getContent().size());
     }
 
     @Test
