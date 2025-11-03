@@ -16,6 +16,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
@@ -52,6 +53,7 @@ public class TradeController {
     @Autowired
     TradeReportingService tradeReportingService;
 
+    @PreAuthorize("hasAnyRole('TRADER_SALES', 'SUPERUSER', 'MO', 'SUPPORT')")
     @GetMapping
     @Operation(summary = "Get all trades",
                description = "Retrieves a list of all trades in the system. Returns comprehensive trade information including legs and cashflows.")
@@ -69,6 +71,8 @@ public class TradeController {
     }
 
     // Handler for trade search by counterparty, book, trader, status, trade date ranges
+    @PreAuthorize("hasAnyRole('TRADER_SALES', 'SUPERUSER', 'MO', 'SUPPORT')")
+    @GetMapping("/search")
     @Operation(summary = "Search trades",
             description = "Retrieves a list of all trades matching search criteria in the system. Returns comprehensive trade information including legs and cashflows.")
     @ApiResponses(value = {
@@ -77,7 +81,6 @@ public class TradeController {
                             schema = @Schema(implementation = TradeDTO.class))),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @GetMapping("/search")
     public List<TradeDTO> getTradesBySearch(@RequestParam(required = false) String counterpartyName, @RequestParam(required = false) String bookName, @RequestParam(required = false) String trader, @RequestParam(required = false) String status, @RequestParam(required = false) LocalDate tradeDateStart, @RequestParam(required = false) LocalDate tradeDateEnd) {
         logger.info("Fetching trades matching query");
         return tradeService.getTradesByMultiCriteria(counterpartyName, bookName, trader,status, tradeDateStart,tradeDateEnd).stream()
@@ -86,6 +89,8 @@ public class TradeController {
     }
 
     // Handler for trade filter by counterparty, book, trader, status, trade date ranges
+    @PreAuthorize("hasAnyRole('TRADER_SALES', 'SUPERUSER', 'MO', 'SUPPORT')")
+    @GetMapping("/filter")
     @Operation(summary = "Filter trades",
             description = "Retrieves pages of all trades matching filter criteria in the system. Returns comprehensive trade information including legs and cashflows.")
     @ApiResponses(value = {
@@ -94,12 +99,13 @@ public class TradeController {
                             schema = @Schema(implementation = TradeDTO.class))),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @GetMapping("/filter")
     public Page<TradeDTO> getAllTradesByFilter(@ModelAttribute TradeFilterDTO tradeFilterDTO, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size ) {
         Pageable pageable = PageRequest.of(page, size);
         return tradeService.getAllTradesByFilter(tradeFilterDTO,pageable).map(tradeMapper::toDto);
     }
 
+    @PreAuthorize("hasAnyRole('TRADER_SALES', 'SUPERUSER', 'MO', 'SUPPORT')")
+    @GetMapping("/rsql")
     @Operation(summary = "Query trades",
             description = "Retrieves pages of all trades matching query criteria in the system. Returns comprehensive trade information including legs and cashflows.")
     @ApiResponses(value = {
@@ -108,12 +114,12 @@ public class TradeController {
                             schema = @Schema(implementation = TradeDTO.class))),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @GetMapping("/rsql")
     public Page<TradeDTO> getTradesByRsqlQuery(@RequestParam(value = "query", required = false) String query, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size ) {
         Pageable pageable = PageRequest.of(page, size);
         return tradeService.getTradesByRsqlQuery(query,pageable).map(tradeMapper::toDto);
     }
 
+    @PreAuthorize("hasAnyRole('TRADER_SALES', 'SUPERUSER', 'MO', 'SUPPORT')")
     @GetMapping("/{id}")
     @Operation(summary = "Get trade by ID",
                description = "Retrieves a specific trade by its unique identifier")
@@ -154,6 +160,7 @@ public class TradeController {
     }
 
     // Handler for Book-level trade aggregation
+    @PreAuthorize("hasAnyRole('TRADER_SALES', 'SUPERUSER', 'MO', 'SUPPORT')")
     @GetMapping("/book/{id}/trades")
     @Operation(summary = "Get trades by book",
             description = "Retrieves a list of all trades for book matching the ID provided. Returns comprehensive trade information including legs and cashflows.")
@@ -203,6 +210,7 @@ public class TradeController {
         return ResponseEntity.ok(dailySummaryDTO);
     }
 
+    @PreAuthorize("hasAnyRole('TRADER_SALES', 'SUPERUSER')")
     @PostMapping
     @Operation(summary = "Create new trade",
                description = "Creates a new trade with the provided details. Automatically generates cashflows and validates business rules.")
@@ -236,6 +244,7 @@ public class TradeController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('TRADER_SALES', 'SUPERUSER', 'MO')")
     @PutMapping("/{id}")
     @Operation(summary = "Update existing trade",
                description = "Updates an existing trade with new information. Subject to business rule validation and user privileges.")
@@ -270,6 +279,7 @@ public class TradeController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('TRADER_SALES', 'SUPERUSER')")
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete trade",
                description = "Deletes an existing trade. This is a soft delete that changes the trade status.")
@@ -292,6 +302,7 @@ public class TradeController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('TRADER_SALES', 'SUPERUSER')")
     @PostMapping("/{id}/terminate")
     @Operation(summary = "Terminate trade",
                description = "Terminates an existing trade before its natural maturity date")
@@ -317,6 +328,7 @@ public class TradeController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('TRADER_SALES', 'SUPERUSER')")
     @PostMapping("/{id}/cancel")
     @Operation(summary = "Cancel trade",
                description = "Cancels an existing trade by changing its status to cancelled")
