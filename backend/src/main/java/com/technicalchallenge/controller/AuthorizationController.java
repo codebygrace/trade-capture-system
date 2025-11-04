@@ -17,7 +17,8 @@ public class AuthorizationController {
 
 
     @PostMapping("/{userName}")
-    public ResponseEntity<?> login(@PathVariable(name = "userName") String userName, @RequestParam(name = "Authorization") String authorization) {
+    public ResponseEntity<?> login(@PathVariable(name = "userName") String userName, 
+                                 @RequestHeader(name = "Authorization") String authorization) {
 
         return authorizationService.authenticateUser(userName, authorization) ?
                 ResponseEntity.ok("Login successful") :

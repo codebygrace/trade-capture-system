@@ -7,6 +7,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 import java.util.Optional;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -15,6 +17,10 @@ import static org.junit.jupiter.api.Assertions.*;
 public class UserServiceTest {
     @Mock
     private ApplicationUserRepository applicationUserRepository;
+
+    @Mock
+    BCryptPasswordEncoder bCryptPasswordEncoder;
+
     @InjectMocks
     private ApplicationUserService applicationUserService;
 

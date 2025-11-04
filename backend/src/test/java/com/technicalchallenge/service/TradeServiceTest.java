@@ -5,6 +5,7 @@ import com.technicalchallenge.dto.TradeFilterDTO;
 import com.technicalchallenge.dto.TradeLegDTO;
 import com.technicalchallenge.model.*;
 import com.technicalchallenge.repository.*;
+import com.technicalchallenge.service.validation.UserPrivilegeValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,6 +52,12 @@ class TradeServiceTest {
     @Mock
     CounterpartyRepository counterpartyRepository;
 
+    @Mock
+    Specification<Trade> specification;
+
+    @Mock
+    UserPrivilegeValidator userPrivilegeValidator;
+
     @InjectMocks
     private TradeService tradeService;
 
@@ -59,6 +66,7 @@ class TradeServiceTest {
 
     @BeforeEach
     void setUp() {
+
         // Set up test data
         tradeDTO = new TradeDTO();
         tradeDTO.setTradeId(100001L);
@@ -167,6 +175,7 @@ class TradeServiceTest {
         when(tradeRepository.findByTradeIdAndActiveTrue(100001L)).thenReturn(Optional.of(trade));
         when(tradeStatusRepository.findByTradeStatus("AMENDED")).thenReturn(Optional.of(new com.technicalchallenge.model.TradeStatus()));
         when(tradeRepository.save(any(Trade.class))).thenReturn(trade);
+        when(userPrivilegeValidator.validateUserPrivileges(any(), eq("AMEND"), any(TradeDTO.class))).thenReturn(true);
 
         // When
         Trade result = tradeService.amendTrade(100001L, tradeDTO);
@@ -214,7 +223,7 @@ class TradeServiceTest {
     }
 
     @Test
-    public void testGetTradesByMultiCriteria_ByCounterparty() {
+    public void testGetTradesByMultiCriteria_searchByCounterparty_returnsList() {
 
         // Given
         Counterparty counterparty = new Counterparty();
@@ -230,6 +239,23 @@ class TradeServiceTest {
         // Then
         assertNotNull(result);
         assertTrue(result.contains(trade));
+        verify(tradeRepository).findByMultiCriteria("BigBank",null,null,null,null,null);
+    }
+
+    @Test
+    public void testGetTradesByMultiCriteria_nullSearch_returnsAll() {
+
+        // Given
+        List<Trade> trades = List.of(trade);
+        when(tradeRepository.findByMultiCriteria(null,null,null,null,null,null)).thenReturn(trades);
+
+        // When
+        List<Trade> result = tradeService.getTradesByMultiCriteria(null,null,null,null,null,null);
+
+        // Then
+        assertNotNull(result);
+        assertTrue(result.contains(trade));
+        verify(tradeRepository).findByMultiCriteria( null,null,null,null,null,null);
     }
 
     @Test
@@ -241,7 +267,7 @@ class TradeServiceTest {
 
         Pageable pageable = PageRequest.of(0,10);
 
-        Page<Trade> resultPage = new PageImpl<>(List.of(trade),pageable,10);
+        Page<Trade> resultPage = new PageImpl<>(List.of(trade),pageable,1);
 
         when(tradeRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(resultPage);
 
@@ -249,7 +275,145 @@ class TradeServiceTest {
         Page<Trade> result = tradeService.getAllTradesByFilter(tradeFilterDTO,pageable);
 
         // Then
+        assertNotNull(result);
+        assertTrue(result.getContent().contains(trade));
         assertEquals(0, result.getNumber());
         assertEquals(10, result.getSize());
+    }
+
+    @Test
+    public void testGetTradeByFilter_nullFilter_returnsPage() {
+
+        // Given
+        TradeFilterDTO tradeFilterDTO = null;
+
+        Pageable pageable = PageRequest.of(0,10);
+
+        Page<Trade> resultPage = new PageImpl<>(List.of(trade),pageable,List.of(trade).size());
+
+        when(tradeRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(resultPage);
+
+        // When
+        Page<Trade> result = tradeService.getAllTradesByFilter(tradeFilterDTO,pageable);
+
+        // Then
+        assertNotNull(result);
+        assertTrue(result.getContent().contains(trade));
+        assertEquals(1,result.getTotalElements());
+        verify(tradeRepository).findAll(any(Specification.class), eq(pageable));
+    }
+
+    @Test
+    public void testGetTradesByRsqlQuery_stringQuery_returnsResultsPage() {
+
+        // Given
+        trade.setTradeDate(LocalDate.of(2025, 1, 15));
+
+        String query = "tradeDate=ge=2025-01-01";
+        Pageable pageable = PageRequest.of(0,10);
+        Page<Trade> resultPage = new PageImpl<>(List.of(trade),pageable,List.of(trade).size());
+
+        when(tradeRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(resultPage);
+
+        // When
+        Page<Trade> result = tradeService.getTradesByRsqlQuery(query,pageable);
+
+        // Then
+        assertNotNull(result);
+        assertTrue(result.getContent().contains(trade));
+        assertEquals(1,result.getTotalElements());
+        verify(tradeRepository).findAll(any(Specification.class), any(Pageable.class));
+    }
+
+    @Test
+    public void testGetTradesByRsqlQuery_nullQuery_returnsResultsPage() {
+
+        // Given
+        String query = null;
+        Pageable pageable = PageRequest.of(0,10);
+        Page<Trade> resultPage = new PageImpl<>(List.of(trade),pageable,List.of(trade).size());
+
+        when(tradeRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(resultPage);
+
+        // When
+        Page<Trade> result = tradeService.getTradesByRsqlQuery(query,pageable);
+
+        // Then
+        assertNotNull(result);
+        assertTrue(result.getContent().contains(trade));
+        assertEquals(1,result.getTotalElements());
+        verify(tradeRepository).findAll(any(Specification.class), eq(pageable));
+    }
+
+    @Test
+    void testCalculateCashflowValueFor10MQuarterly3Point5Rate() throws Exception {
+
+        // Given
+        LegType fixed = new LegType();
+        fixed.setType("Fixed");
+
+        TradeLeg leg = new TradeLeg();
+        leg.setNotional(BigDecimal.valueOf(10000000));
+        leg.setRate(3.5);
+        leg.setLegRateType(fixed);
+
+        int monthsInterval = 3;
+
+        Method calculateCashflowValue = TradeService.class.getDeclaredMethod("calculateCashflowValue", TradeLeg.class, int.class);
+        calculateCashflowValue.setAccessible(true);
+
+        // When
+        BigDecimal result = (BigDecimal) calculateCashflowValue.invoke(tradeService,leg,monthsInterval);
+
+        // Then
+        assertEquals(new BigDecimal("87500.00"), result);
+    }
+
+    @Test // This tests the scenario where an infinite repeating decimal occurs
+    void testCalculateCashflowValueFor10MMonthly3Point5Rate() throws Exception {
+
+        // Given
+        LegType fixed = new LegType();
+        fixed.setType("Fixed");
+
+        TradeLeg leg = new TradeLeg();
+        leg.setNotional(BigDecimal.valueOf(10000000));
+        leg.setRate(3.5);
+        leg.setLegRateType(fixed);
+
+        int monthsInterval = 1;
+
+        Method calculateCashflowValue = TradeService.class.getDeclaredMethod("calculateCashflowValue", TradeLeg.class, int.class);
+        calculateCashflowValue.setAccessible(true);
+
+        // When
+        BigDecimal result = (BigDecimal) calculateCashflowValue.invoke(tradeService,leg,monthsInterval);
+
+        // Then
+        assertEquals(new BigDecimal("29166.67"), result);
+    }
+
+    @Test // Tests a rate with multiple decimal points
+    void testCalculateCashflowValueFor10MMonthlySmallDecimalRate() throws Exception {
+
+        // Given
+        LegType fixed = new LegType();
+        fixed.setType("Fixed");
+
+        TradeLeg leg = new TradeLeg();
+        leg.setNotional(BigDecimal.valueOf(10000000));
+        leg.setRate(0.0333333);
+        leg.setLegRateType(fixed);
+
+        int monthsInterval = 1;
+
+        Method calculateCashflowValue = TradeService.class.getDeclaredMethod("calculateCashflowValue", TradeLeg.class, int.class);
+        calculateCashflowValue.setAccessible(true);
+
+        // When
+        BigDecimal result = (BigDecimal) calculateCashflowValue.invoke(tradeService,leg,monthsInterval);
+
+        // Then
+        assertEquals(new BigDecimal("277.78"), result);
     }
 }
