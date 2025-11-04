@@ -1,6 +1,6 @@
 # Multi-stage build
 # Stage 1 - Base stage with Node.js and pnpm setup
-FROM node:20-slim AS base
+FROM node:22-slim AS base
 
 # Install pnpm via corepack
 # Set environment variable inside the container
