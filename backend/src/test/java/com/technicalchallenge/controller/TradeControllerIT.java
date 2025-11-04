@@ -458,4 +458,21 @@ public class TradeControllerIT {
         assertEquals(HttpStatus.BAD_REQUEST,response.getStatusCode());
         assertNotNull(response.getBody());
     }
+
+    @Test
+    @DisplayName("Search for part of settlement instruction returns trade with matching instruction")
+    void testSearchSettlementInstructions(){
+
+        String instructions = "via JPM New York";
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                baseUrl+"/search/settlement-instructions?instructions=" + instructions,
+                HttpMethod.GET,
+                null,
+                String.class
+        );
+        assertEquals(HttpStatus.OK,response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().contains(instructions));
+    }
 }
