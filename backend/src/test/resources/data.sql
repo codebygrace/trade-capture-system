@@ -58,6 +58,6 @@ INSERT INTO cashflow (id, payment_value, value_date, rate, leg_id, pay_rec_id, p
   (1002, 225000.00, '2024-06-04', 0.045, 1002, 1000, 1000, 1001, true, '2024-06-02T11:15:00', '2024-06-02', null);
 
 -- Sample Additional Info
-INSERT INTO additional_info (id, entity_type, entity_id, field_name, field_value, field_type, trade_id, active, created_date, last_modified_date,
+INSERT INTO additional_info (id, entity_type, entity_id, field_name, field_value, field_type, active, created_date, last_modified_date,
                              deactivated_date, version) VALUES
-    (1000,'TRADE',100001, 'SETTLEMENT_INSTRUCTIONS', 'Settle via JPM New York, Account: 123456789, Further Credit ABC Corp Trading Account', 'STRING', 1000 , true ,'2024-06-02T11:15:00', '2024-06-02T11:15:00', null, 1)
+    (1000,'TRADE',100001, 'SETTLEMENT_INSTRUCTIONS', 'Settle via JPM New York, Account: 123456789, Further Credit ABC Corp Trading Account', 'STRING', true ,'2024-06-02T11:15:00', '2024-06-02T11:15:00', null, 1)

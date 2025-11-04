@@ -72,8 +72,4 @@ public class Trade {
 
     @OneToMany(mappedBy = "trade", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TradeLeg> tradeLegs;
-
-    @OneToMany(mappedBy = "trade", cascade = CascadeType.ALL, orphanRemoval = true)
-    private  List<AdditionalInfo> additionalInfos;
-
 }

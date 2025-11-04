@@ -48,10 +48,9 @@ public interface TradeRepository extends JpaRepository<Trade, Long>, JpaSpecific
                                     @Param("tradeDateEnd")LocalDate tradeDateEnd);
 
     // Method for searching trades by settlement instructions. LIKE is used to ensure partial matches are found
-    @Query("SELECT t FROM Trade t " +
-            "JOIN AdditionalInfo a ON t.id = a.trade.id " +
-            "WHERE LOWER(a.fieldValue) LIKE CONCAT('%', LOWER(:instructions), '%')" +
-            "AND a.fieldName = 'settlementInstructions' ")
-    List<Trade> findByAdditionalInfosIsLikeIgnoreCase(@Param("instructions") String instructions);
+    @Query("SELECT t FROM Trade t, AdditionalInfo a WHERE t.tradeId = a.entityId " +
+            "AND a.entityType = 'TRADE' AND a.fieldName = 'SETTLEMENT_INSTRUCTIONS' " +
+            "AND LOWER(a.fieldValue) LIKE LOWER(CONCAT('%', :instructions, '%'))")
+    List<Trade> findBySettlementInstructions(@Param("instructions") String instructions);
 
 }

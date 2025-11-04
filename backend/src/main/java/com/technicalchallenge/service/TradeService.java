@@ -100,9 +100,9 @@ public class TradeService {
         return tradeRepository.findAll(spec, pageable);
     }
 
-    public List<Trade> getTradesByAdditionalInfo(String instructions) {
+    public List<Trade> getTradesBySettlementInstructions(String instructions) {
         logger.info("Retrieving trades with matching settlement instructions");
-        return tradeRepository.findByAdditionalInfosIsLikeIgnoreCase(instructions);
+        return tradeRepository.findBySettlementInstructions(instructions);
     }
 
     @Transactional
