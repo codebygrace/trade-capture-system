@@ -1,7 +1,7 @@
 # Multi-stage build
 # Stage 1 - build the application from source
 # Use a Java base image for the container
-FROM openjdk:21-jdk AS build
+FROM eclipse-temurin:21-jdk AS build
 
 # Set the working directory
 WORKDIR application
@@ -17,7 +17,7 @@ RUN java -Djarmode=layertools -jar application.jar extract
 
 # Stage 2 - create the final Docker image
 # Use a Java base image for the container
-FROM openjdk:21-jdk-slim
+FROM eclipse-temurin:21-jre
 
 # Set working directory
 WORKDIR application
