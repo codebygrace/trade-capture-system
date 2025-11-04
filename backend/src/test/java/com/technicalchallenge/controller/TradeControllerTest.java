@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.technicalchallenge.dto.TradeDTO;
 import com.technicalchallenge.dto.TradeFilterDTO;
+import com.technicalchallenge.mapper.SettlementInstructionsMapper;
 import com.technicalchallenge.mapper.TradeMapper;
 import com.technicalchallenge.model.Trade;
 import com.technicalchallenge.service.AdditionalInfoService;
@@ -51,6 +52,9 @@ public class TradeControllerTest {
 
     @MockBean
     private AdditionalInfoService additionalInfoService;
+
+    @MockBean
+    private SettlementInstructionsMapper settlementInstructionsMapper;
 
     private ObjectMapper objectMapper;
     private TradeDTO tradeDTO;
