@@ -4,7 +4,7 @@
 FROM eclipse-temurin:21-jdk AS build
 
 # Set the working directory
-WORKDIR application
+WORKDIR /application
 
 # Define a variable and assign the path of the jar file
 ARG JAR_FILE=target/*.jar
@@ -20,7 +20,7 @@ RUN java -Djarmode=layertools -jar application.jar extract
 FROM eclipse-temurin:21-jre
 
 # Set working directory
-WORKDIR application
+WORKDIR /application
 
 # Copy the 4 layers extracted by the first stage to the current docker image
 # This allows Docker to reuse layers from Cache
