@@ -49,6 +49,7 @@ const Navbar = () => {
                         aria-label="signout"
                         onClick={() => {
                             localStorage.setItem('authenticated', 'false');
+                            sessionStorage.removeItem('authHeader');
                             navigate('/signin');
                         }}
                     >
