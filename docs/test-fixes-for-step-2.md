@@ -2,14 +2,14 @@
 
 ## Summary 
 
-14 test failures were discovered in the following tests:
+Out of 61 tests, 14 failed tests were discovered in the following test classes:
 
-| Test                   | Failures |
-|------------------------|----------|
-| BookServiceTest        | 3        |
-| TradeControllerTest    | 6        |
-| TradeLegControllerTest | 1        |
-| TradeServiceTest       | 4        |
+| Test Class             | Failures | Errors |
+|------------------------|:--------:|:------:|
+| BookServiceTest        |    -     |   3    |
+| TradeControllerTest    |    6     |   -    |
+| TradeLegControllerTest |    1     |   -    |
+| TradeServiceTest       |    2     |   2    |
 
 
 ## Details of Test Fixes
