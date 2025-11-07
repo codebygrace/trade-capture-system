@@ -680,4 +680,56 @@ public class TradeControllerIT {
         assertNotNull(response.getBody());
         assertTrue(response.getBody().contains(instructions));
     }
+
+    @Test
+    @DisplayName("Search settlement instructions with instructions in that doesn't match one on a trade returns empty list")
+    void testSearchSettlementInstructionsWithEmptyString(){
+
+        String instructions = "Send to Test Bank";
+
+        ResponseEntity<List<TradeDTO>> response = restTemplate.exchange(
+                baseUrl+"/search/settlement-instructions?instructions=" + instructions,
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<>() {}
+        );
+        assertEquals(HttpStatus.OK,response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().isEmpty());
+    }
+
+    @Test
+    @DisplayName("Search settlement instructions without authentication returns 401")
+    void testSearchSettlementWithoutAuthenticationReturnsUnauthorised() {
+        TestRestTemplate noAuthTemplate = new TestRestTemplate();
+
+        String instructions = "via JPM New York";
+
+        ResponseEntity<String> response = noAuthTemplate.exchange(
+                baseUrl+"/search/settlement-instructions?instructions=" + instructions,
+                HttpMethod.GET,
+                null,
+                String.class
+        );
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Search for settlement instruction is case insensitive")
+    void testSearchSettlementInstructionsCaseInsensitive(){
+
+        String instructions = "vIa jpm nEW yoRK";
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                baseUrl+"/search/settlement-instructions?instructions=" + instructions,
+                HttpMethod.GET,
+                null,
+                String.class
+        );
+        assertEquals(HttpStatus.OK,response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().toLowerCase().contains(instructions.toLowerCase()));
+    }
+
 }
