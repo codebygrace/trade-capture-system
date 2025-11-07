@@ -3,7 +3,9 @@ package com.technicalchallenge.controller;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.technicalchallenge.dto.DailySummaryDTO;
 import com.technicalchallenge.dto.TradeDTO;
+import com.technicalchallenge.dto.TradeSummaryDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -200,8 +202,13 @@ public class TradeControllerIT {
     void testSearchByNullReturnsAll() {
         List<TradeDTO> trades = searchTrades("");
 
+        // Used to check total number of trades
+        ResponseEntity<List<TradeDTO>> allTrades = restTemplate.exchange(
+                baseUrl, HttpMethod.GET, null, new ParameterizedTypeReference<>() {});
+
         assertFalse(trades.isEmpty());
-        assertEquals(2, trades.size());
+        assertNotNull(allTrades.getBody());
+        assertEquals(allTrades.getBody().size(), trades.size());
     }
 
     @Test
@@ -344,8 +351,13 @@ public class TradeControllerIT {
     void testFilterByNullReturnsAll() {
         Page<TradeDTO> trades = filterTrades("");
 
+        // Used to check total number of trades
+        ResponseEntity<List<TradeDTO>> allTrades = restTemplate.exchange(
+                baseUrl, HttpMethod.GET, null, new ParameterizedTypeReference<>() {});
+
         assertFalse(trades.isEmpty());
-        assertEquals(2, trades.getContent().size());
+        assertNotNull(allTrades.getBody());
+        assertEquals(allTrades.getBody().size(), trades.getContent().size());
     }
 
     @Test
@@ -458,4 +470,197 @@ public class TradeControllerIT {
         assertEquals(HttpStatus.BAD_REQUEST,response.getStatusCode());
         assertNotNull(response.getBody());
     }
+
+    @Test
+    @DisplayName("My trades request with valid trader returns only their trades")
+    void testMyTradesRequestOnlyReturnsCurrentTraderTrades() {
+
+        ResponseEntity<List<TradeDTO>> response = restTemplate.exchange(
+                baseUrl+"/my-trades",
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<>() {}
+        );
+
+        List<TradeDTO> trades = response.getBody();
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(trades);
+        assertTrue(trades.stream().allMatch(trade -> trade.getTraderUserName().equals("Simon King")));
+    }
+
+    @Test
+    @DisplayName("My trades request without authentication returns 401")
+    void testMyTradesNoAuthReturnsUnauthorised() {
+        TestRestTemplate noAuthTemplate = new TestRestTemplate();
+        ResponseEntity<String> response = noAuthTemplate.exchange(
+                baseUrl+"/my-trades",
+                HttpMethod.GET,
+                null,
+                String.class
+        );
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("My trades request without privileges returns 403")
+    void testMyTradesRequestByNonTraderReturnsForbidden() {
+
+        TestRestTemplate supportRestTemplate = new TestRestTemplate("alice", "password");
+
+        ResponseEntity<String> response = supportRestTemplate.exchange(
+                baseUrl+"/my-trades",
+                HttpMethod.GET,
+                null,
+                String.class
+        );
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Get trades by book returns list of trades")
+    void testBookLevelAggregationReturnMatchingTrades() {
+
+        ResponseEntity<List<TradeDTO>> response = restTemplate.exchange(
+                baseUrl+"/book/1000/trades",
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<>() {}
+        );
+
+        List<TradeDTO> trades = response.getBody();
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(trades);
+        assertTrue(trades.stream().allMatch(trade -> trade.getBookName().equals("FX-BOOK-1")));
+    }
+
+    @Test
+    @DisplayName("Get trades by book with invalid ID returns empty list")
+    void testBookLevelAggregationInvalidIDReturnsEmptyList() {
+
+        ResponseEntity<List<TradeDTO>> response = restTemplate.exchange(
+                baseUrl+"/book/54311/trades",
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<>() {}
+        );
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().isEmpty());
+    }
+
+    @Test
+    @DisplayName("Get trades by book by user without privileges returns 403")
+    void testBookLevelAggregationNoPrivilegesReturnsForbidden() {
+
+        TestRestTemplate supportRestTemplate = new TestRestTemplate("alice", "password");
+
+        ResponseEntity<String> response = supportRestTemplate.exchange(
+                baseUrl+"/book/1000/trades",
+                HttpMethod.GET,
+                null,
+                String.class
+        );
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Summary request returns correct format")
+    void testSummaryReturnStatsForTrader() {
+
+        ResponseEntity<TradeSummaryDTO> response = restTemplate.exchange(
+                baseUrl+"/summary",
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<>() {}
+        );
+
+        TradeSummaryDTO summary = response.getBody();
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(summary);
+        assertNotNull(summary.getTotalTradesByStatus());
+        assertNotNull(summary.getTotalNotionalByCurrency());
+        assertNotNull(summary.getTradesByTypeByCounterparty());
+    }
+
+    @Test
+    @DisplayName("Summary without authentication returns 401")
+    void testSummaryWithoutAuthenticationReturnsUnauthorised() {
+        TestRestTemplate noAuthTemplate = new TestRestTemplate();
+        ResponseEntity<String> response = noAuthTemplate.exchange(
+                baseUrl+"/summary",
+                HttpMethod.GET,
+                null,
+                String.class
+        );
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Summary request by user without privileges returns 403")
+    void testSummaryWithoutPrivilegesReturnsForbidden() {
+
+        TestRestTemplate supportRestTemplate = new TestRestTemplate("alice", "password");
+
+        ResponseEntity<String> response = supportRestTemplate.exchange(
+                baseUrl+"/summary",
+                HttpMethod.GET,
+                null,
+                String.class
+        );
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Daily summary request returns valid structure with data for today and yesterday")
+    void testDailySummaryReturnStatsForTrader() {
+
+        ResponseEntity<DailySummaryDTO> response = restTemplate.exchange(
+                baseUrl+"/daily-summary",
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<>() {}
+        );
+
+        DailySummaryDTO dailySummary = response.getBody();
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(dailySummary);
+    }
+
+    @Test
+    @DisplayName("Daily summary without authentication returns 401")
+    void testDailySummaryWithoutAuthenticationReturnsUnauthorised() {
+        TestRestTemplate noAuthTemplate = new TestRestTemplate();
+        ResponseEntity<String> response = noAuthTemplate.exchange(
+                baseUrl+"/daily-summary",
+                HttpMethod.GET,
+                null,
+                String.class
+        );
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Daily summary request by user without privileges returns 403")
+    void testDailySummaryWithoutPrivilegesReturnsForbidden() {
+
+        TestRestTemplate supportRestTemplate = new TestRestTemplate("alice", "password");
+
+        ResponseEntity<String> response = supportRestTemplate.exchange(
+                baseUrl+"/daily-summary",
+                HttpMethod.GET,
+                null,
+                String.class
+        );
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    }
+
 }

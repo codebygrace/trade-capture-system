@@ -46,4 +46,17 @@ public interface TradeRepository extends JpaRepository<Trade, Long>, JpaSpecific
                                     @Param("status") String status,
                                     @Param("tradeDateStart")LocalDate tradeDateStart,
                                     @Param("tradeDateEnd")LocalDate tradeDateEnd);
+
+
+    // Method for finding trades for a given loginId
+    @Query("SELECT t FROM Trade t WHERE t.traderUser.loginId = :loginId AND t.active = true")
+    List<Trade> findByTraderAndActiveTrue(@Param("loginId") String loginId);
+
+    // Method for finding trades for a book with the given bookId
+    List<Trade> findByBookIdAndActiveTrue(@Param("bookId") Long bookId);
+
+    // Method for counting active trades for a given loginId and tradeDate
+    @Query("SELECT COUNT(t) FROM Trade t WHERE t.traderUser.loginId = :loginId AND t.tradeDate = :tradeDate AND t.active = true")
+    long countTradeByTraderAndTradeDate(@Param("loginId") String loginId, @Param("tradeDate") LocalDate tradeDate);
+
 }

@@ -6,6 +6,7 @@ import com.technicalchallenge.dto.TradeDTO;
 import com.technicalchallenge.dto.TradeFilterDTO;
 import com.technicalchallenge.mapper.TradeMapper;
 import com.technicalchallenge.model.Trade;
+import com.technicalchallenge.service.TradeReportingService;
 import com.technicalchallenge.service.TradeService;
 import cz.jirutka.rsql.parser.UnknownOperatorException;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,6 +45,9 @@ public class TradeControllerTest {
 
     @MockBean
     private TradeService tradeService;
+
+    @MockBean
+    private TradeReportingService tradeReportingService;
 
     @MockBean
     private TradeMapper tradeMapper;
