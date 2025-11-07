@@ -1,14 +1,18 @@
 package com.technicalchallenge.service;
 
 import com.technicalchallenge.dto.BookDTO;
+import com.technicalchallenge.mapper.BookMapper;
 import com.technicalchallenge.model.Book;
+import com.technicalchallenge.model.CostCenter;
 import com.technicalchallenge.repository.BookRepository;
+import com.technicalchallenge.repository.CostCenterRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -18,6 +22,13 @@ import static org.mockito.Mockito.*;
 public class BookServiceTest {
     @Mock
     private BookRepository bookRepository;
+
+    @Mock
+    private CostCenterRepository costCenterRepository;
+
+    @Mock
+    BookMapper bookMapper;
+
     @InjectMocks
     private BookService bookService;
 
@@ -25,7 +36,13 @@ public class BookServiceTest {
     void testFindBookById() {
         Book book = new Book();
         book.setId(1L);
+
+        BookDTO bookDTO = new BookDTO();
+        bookDTO.setId(1L);
+
         when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
+        when(bookMapper.toDto(book)).thenReturn(bookDTO);
+
         Optional<BookDTO> found = bookService.getBookById(1L);
         assertTrue(found.isPresent());
         assertEquals(1L, found.get().getId());
@@ -35,11 +52,22 @@ public class BookServiceTest {
     void testSaveBook() {
         Book book = new Book();
         book.setId(2L);
+
+        CostCenter costCenter = new CostCenter();
+        costCenter.setId(1L);
+        costCenter.setCostCenterName("Cost Center");
+
         BookDTO bookDTO = new BookDTO();
         bookDTO.setId(2L);
+        bookDTO.setCostCenterName("Cost Center");
+
+        when(bookMapper.toEntity(bookDTO)).thenReturn(book);
+        when(costCenterRepository.findAll()).thenReturn(List.of(costCenter));
         when(bookRepository.save(any(Book.class))).thenReturn(book);
+        when(bookMapper.toDto(book)).thenReturn(bookDTO);
 
         BookDTO saved = bookService.saveBook(bookDTO);
+
         assertNotNull(saved);
         assertEquals(2L, saved.getId());
     }

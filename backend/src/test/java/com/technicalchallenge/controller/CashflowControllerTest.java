@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -29,6 +30,7 @@ import java.util.Optional;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -89,6 +91,7 @@ public class CashflowControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "SUPERUSER")
     void testGetAllCashflows() throws Exception {
         // Given
         List<Cashflow> cashflows = Arrays.asList(cashflow);
@@ -107,6 +110,7 @@ public class CashflowControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "SUPERUSER")
     void testGetCashflowById() throws Exception {
         // Given
         when(cashflowService.getCashflowById(1L)).thenReturn(Optional.of(cashflow));
@@ -125,6 +129,7 @@ public class CashflowControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "SUPERUSER")
     void testGetCashflowByIdNotFound() throws Exception {
         // Given
         when(cashflowService.getCashflowById(999L)).thenReturn(Optional.empty());
@@ -138,12 +143,13 @@ public class CashflowControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "SUPERUSER")
     void testCreateCashflow() throws Exception {
         // Given
         when(cashflowService.saveCashflow(any(Cashflow.class))).thenReturn(cashflow);
 
         // When/Then
-        mockMvc.perform(post("/api/cashflows")
+        mockMvc.perform(post("/api/cashflows").with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(cashflowDTO)))
                 .andExpect(status().isOk())
@@ -155,12 +161,13 @@ public class CashflowControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "SUPERUSER")
     void testCreateCashflowValidationFailure_NegativePaymentValue() throws Exception {
         // Given
         cashflowDTO.setPaymentValue(BigDecimal.valueOf(-5000.0));
 
         // When/Then
-        mockMvc.perform(post("/api/cashflows")
+        mockMvc.perform(post("/api/cashflows").with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(cashflowDTO)))
                 .andExpect(status().isBadRequest())
@@ -170,12 +177,13 @@ public class CashflowControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "SUPERUSER")
     void testCreateCashflowValidationFailure_MissingValueDate() throws Exception {
         // Given
         cashflowDTO.setValueDate(null);
 
         // When/Then
-        mockMvc.perform(post("/api/cashflows")
+        mockMvc.perform(post("/api/cashflows").with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(cashflowDTO)))
                 .andExpect(status().isBadRequest())
@@ -185,12 +193,13 @@ public class CashflowControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "SUPERUSER")
     void testDeleteCashflow() throws Exception {
         // Given
         doNothing().when(cashflowService).deleteCashflow(1L);
 
         // When/Then
-        mockMvc.perform(delete("/api/cashflows/1")
+        mockMvc.perform(delete("/api/cashflows/1").with(csrf())
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
 
@@ -198,6 +207,7 @@ public class CashflowControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "SUPERUSER")
     void testGenerateCashflows() throws Exception {
         // Given
         CashflowGenerationRequest request = new CashflowGenerationRequest();
@@ -218,13 +228,14 @@ public class CashflowControllerTest {
         // This is a simplification since the actual implementation is in the controller
 
         // When/Then
-        mockMvc.perform(post("/api/cashflows/generate")
+        mockMvc.perform(post("/api/cashflows/generate").with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());
     }
 
     @Test
+    @WithMockUser(roles = "SUPERUSER")
     void testGenerateCashflowsWithNoLegs() throws Exception {
         // Given
         CashflowGenerationRequest request = new CashflowGenerationRequest();
@@ -233,7 +244,7 @@ public class CashflowControllerTest {
         request.setLegs(new ArrayList<>());  // Empty legs list
 
         // When/Then
-        mockMvc.perform(post("/api/cashflows/generate")
+        mockMvc.perform(post("/api/cashflows/generate").with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());

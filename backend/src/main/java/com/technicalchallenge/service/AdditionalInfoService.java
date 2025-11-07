@@ -2,6 +2,7 @@ package com.technicalchallenge.service;
 
 import com.technicalchallenge.dto.AdditionalInfoDTO;
 import com.technicalchallenge.model.AdditionalInfo;
+import com.technicalchallenge.model.EntityType;
 import com.technicalchallenge.repository.AdditionalInfoRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +23,7 @@ public class AdditionalInfoService {
     @Autowired
     private ModelMapper modelMapper;
 
-    public List<AdditionalInfoDTO> getAdditionalInfoForEntity(String entityType, Long entityId) {
+    public List<AdditionalInfoDTO> getAdditionalInfoForEntity(EntityType entityType, Long entityId) {
         List<AdditionalInfo> additionalInfoList = additionalInfoRepository.findActiveByEntityTypeAndEntityId(entityType, entityId);
         return additionalInfoList.stream()
                 .map(info -> modelMapper.map(info, AdditionalInfoDTO.class))
@@ -52,7 +53,7 @@ public class AdditionalInfoService {
         return modelMapper.map(saved, AdditionalInfoDTO.class);
     }
 
-    public void removeAdditionalInfo(String entityType, Long entityId, String fieldName) {
+    public void removeAdditionalInfo(EntityType entityType, Long entityId, String fieldName) {
         AdditionalInfo existing = additionalInfoRepository.findActiveByEntityTypeAndEntityIdAndFieldName(
                 entityType, entityId, fieldName);
 

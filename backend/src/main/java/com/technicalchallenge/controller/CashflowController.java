@@ -20,6 +20,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import jakarta.validation.Valid;
 
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -140,6 +141,7 @@ public class CashflowController {
             if (months <= 0) {
                 continue;
             }
+            // Assumes that a 30/360 day-count applies and that each month is 30 days
             LocalDate valueDate = startDate;
             while (valueDate.isBefore(maturityDate)) {
                 LocalDate nextValueDate = valueDate.plusMonths(months);
@@ -148,9 +150,9 @@ public class CashflowController {
                 }
                 BigDecimal paymentValue = BigDecimal.ZERO;
                 if ("Fixed".equalsIgnoreCase(leg.getLegType())) {
-                    long days = java.time.temporal.ChronoUnit.DAYS.between(valueDate, nextValueDate);
                     double rate = leg.getRate() != null ? leg.getRate() : 0.0;
-                    paymentValue = leg.getNotional().multiply(BigDecimal.valueOf(rate)).multiply(BigDecimal.valueOf(days)).divide(BigDecimal.valueOf(360), 2, BigDecimal.ROUND_HALF_UP);
+                    BigDecimal decimalRate = BigDecimal.valueOf(rate).divide(BigDecimal.valueOf(100),10, RoundingMode.HALF_EVEN);
+                    paymentValue = leg.getNotional().multiply(decimalRate).multiply(BigDecimal.valueOf(months)).divide(BigDecimal.valueOf(12), 2, BigDecimal.ROUND_HALF_UP);
                 }
                 // For floating, paymentValue remains 0
                 CashflowDTO cf = new CashflowDTO();

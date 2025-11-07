@@ -1,11 +1,14 @@
 package com.technicalchallenge.mapper;
 
+import com.technicalchallenge.dto.AdditionalInfoDTO;
 import com.technicalchallenge.dto.TradeDTO;
 import com.technicalchallenge.dto.TradeLegDTO;
 import com.technicalchallenge.dto.CashflowDTO;
+import com.technicalchallenge.model.EntityType;
 import com.technicalchallenge.model.Trade;
 import com.technicalchallenge.model.TradeLeg;
 import com.technicalchallenge.model.Cashflow;
+import com.technicalchallenge.service.AdditionalInfoService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -18,6 +21,8 @@ public class TradeMapper {
 
     @Autowired
     private ModelMapper modelMapper;
+    @Autowired
+    private AdditionalInfoService additionalInfoService;
 
     public TradeDTO toDto(Trade trade) {
         if (trade == null) {
@@ -81,6 +86,12 @@ public class TradeMapper {
                     .map(this::tradeLegToDto)
                     .collect(Collectors.toList());
             dto.setTradeLegs(legDTOs);
+        }
+
+        // Fetch additional info for trade via service
+        if (trade.getTradeId() != null) {
+            List<AdditionalInfoDTO> additionalInfoDTOs = additionalInfoService.getAdditionalInfoForEntity(EntityType.TRADE, trade.getTradeId());
+            dto.setAdditionalFields(additionalInfoDTOs);
         }
 
         return dto;

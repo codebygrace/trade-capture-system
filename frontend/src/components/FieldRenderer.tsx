@@ -1,6 +1,7 @@
 import React from "react";
 import Input from "./Input";
 import Dropdown from "./Dropdown";
+import TextArea from "./TextArea";
 
 /**
  * Props for the FieldRenderer component
@@ -51,11 +52,24 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({field, value, disabled, on
             />
         );
     }
+
+    if (field.type === "textarea") {
+        return (
+            <TextArea 
+                size="lg"
+                value={typeof value === 'string' || typeof value === 'number' ? value.toString() : ""}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onChange(e.target.value)}
+                disabled={disabled}
+                className={commonClass}
+            />
+        );
+    }
+
     return (
         <Input
             size="md"
             value={typeof value === 'string' || typeof value === 'number' ? value.toString() : ""}
-            onChange={onChange}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
             type={field.type === "date" ? "date" : "text"}
             disabled={disabled}
             className={commonClass}
