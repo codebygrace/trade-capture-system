@@ -329,6 +329,11 @@ public class TradeController {
             @Valid @RequestBody SettlementInstructionsUpdateDTO request) {
         logger.info("Updating settlement instructions for trade with id: {}", id);
         try {
+            // Check to see if trade exists
+            if (tradeService.getTradeById(id).isEmpty()) {
+                return ResponseEntity.badRequest().body("Trade with id: " + id + " does not exist");
+            }
+
             request.setEntityId(id);
             AdditionalInfoDTO dto = settlementInstructionsMapper.toDto(request);
             AdditionalInfoDTO amendedInstructions = additionalInfoService.updateAdditionalInfo(dto);
