@@ -308,7 +308,9 @@ public class TradeController {
         }
     }
 
-   // Update settlement instructions for trades
+    // Update settlement instructions for trades
+    // TRADER_SALES and MO require the ability to update settlement instructions
+    @PreAuthorize("hasAnyRole('TRADER_SALES', 'SUPERUSER', 'MO')")
     @PutMapping("/{id}/settlement-instructions")
     @Operation(summary = "Update trade settlement instructions",
             description = "Updates trade settlement instructions with new information. Subject to business rule validation and user privileges.")
