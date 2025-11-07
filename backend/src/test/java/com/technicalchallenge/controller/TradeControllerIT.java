@@ -479,7 +479,7 @@ public class TradeControllerIT {
                 baseUrl+"/my-trades",
                 HttpMethod.GET,
                 null,
-                new ParameterizedTypeReference<List<TradeDTO>>() {}
+                new ParameterizedTypeReference<>() {}
         );
 
         List<TradeDTO> trades = response.getBody();
@@ -526,7 +526,7 @@ public class TradeControllerIT {
                 baseUrl+"/book/1000/trades",
                 HttpMethod.GET,
                 null,
-                new ParameterizedTypeReference<List<TradeDTO>>() {}
+                new ParameterizedTypeReference<>() {}
         );
 
         List<TradeDTO> trades = response.getBody();
@@ -543,7 +543,7 @@ public class TradeControllerIT {
                 baseUrl+"/book/54311/trades",
                 HttpMethod.GET,
                 null,
-                new ParameterizedTypeReference<List<TradeDTO>>() {}
+                new ParameterizedTypeReference<>() {}
         );
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -575,7 +575,7 @@ public class TradeControllerIT {
                 baseUrl+"/summary",
                 HttpMethod.GET,
                 null,
-                new ParameterizedTypeReference<TradeSummaryDTO>() {}
+                new ParameterizedTypeReference<>() {}
         );
 
         TradeSummaryDTO summary = response.getBody();
@@ -625,7 +625,7 @@ public class TradeControllerIT {
                 baseUrl+"/daily-summary",
                 HttpMethod.GET,
                 null,
-                new ParameterizedTypeReference<DailySummaryDTO>() {}
+                new ParameterizedTypeReference<>() {}
         );
 
         DailySummaryDTO dailySummary = response.getBody();

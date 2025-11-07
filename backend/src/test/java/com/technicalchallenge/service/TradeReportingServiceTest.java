@@ -36,7 +36,7 @@ public class TradeReportingServiceTest {
     private TradeReportingService tradeReportingService;
 
     private List<Trade> trades;
-    private String loginId = "joey";
+    private final String loginId = "joey";
 
 
     @Test
@@ -174,11 +174,8 @@ public class TradeReportingServiceTest {
         Trade trade1 = new Trade();
         trade1.setTradeDate(LocalDate.now());
 
-
         Trade trade2 = new Trade();
         trade2.setTradeDate(LocalDate.now());
-
-        List<Trade> trades = List.of(trade1,trade2);
 
         when((userDetails.getUsername())).thenReturn(loginId);
         when(tradeRepository.countTradeByTraderAndTradeDate(loginId, LocalDate.now())).thenReturn(2L);
