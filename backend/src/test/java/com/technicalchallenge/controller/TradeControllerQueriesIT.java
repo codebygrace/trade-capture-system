@@ -31,7 +31,7 @@ These integration tests use a separate H2 in-memory database to ensure isolation
 Test data is in src/test/resources/data.sql to reduce repetition
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class TradeControllerIT {
+public class TradeControllerQueriesIT {
 
     @LocalServerPort
     private int port;

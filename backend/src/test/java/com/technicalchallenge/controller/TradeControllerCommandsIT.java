@@ -27,7 +27,7 @@ Test data is in src/test/resources/data.sql to reduce repetition
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-public class TradeControllerValidationIT {
+public class TradeControllerCommandsIT {
 
     @LocalServerPort
     private int port;
