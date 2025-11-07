@@ -1,5 +1,6 @@
 package com.technicalchallenge.controller;
 
+import com.technicalchallenge.dto.SettlementInstructionsUpdateDTO;
 import com.technicalchallenge.dto.TradeDTO;
 import com.technicalchallenge.dto.TradeLegDTO;
 import org.junit.jupiter.api.BeforeEach;
@@ -421,5 +422,73 @@ public class TradeControllerCommandsIT {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertTrue(response.getBody().contains("Trade cancelled successfully"));
+    }
+
+    @Test
+    @DisplayName("Update settlement instructions with valid data returns 200")
+    void testUpdateSettlementInstructionsWithValidData() {
+        SettlementInstructionsUpdateDTO request = new SettlementInstructionsUpdateDTO();
+        request.setFieldValue("New instruction is to send via BigBank");
+
+        ResponseEntity<SettlementInstructionsUpdateDTO> response = restTemplate.exchange(
+                baseUrl + "/100001/settlement-instructions",
+                HttpMethod.PUT,
+                new HttpEntity<>(request),
+                SettlementInstructionsUpdateDTO.class);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("New instruction is to send via BigBank", response.getBody().getFieldValue());
+    }
+
+    @Test
+    @DisplayName("Update settlement instructions for non-existent trade returns 400")
+    void testUpdateSettlementInstructionsNonExistentTradeReturns400() {
+        SettlementInstructionsUpdateDTO request = new SettlementInstructionsUpdateDTO();
+        request.setFieldValue("New instruction is to send via BigBank");
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                baseUrl + "/345436/settlement-instructions",
+                HttpMethod.PUT,
+                new HttpEntity<>(request),
+                String.class);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().contains("Trade with id: 345436 does not exist"));
+    }
+
+    @Test
+    @DisplayName("Update settlement instructions without authentication returns 401")
+    void testUpdateSettlementInstructionsWithoutAuthReturns401() {
+
+        TestRestTemplate noAuthRestTemplate = new TestRestTemplate();
+        SettlementInstructionsUpdateDTO request = new SettlementInstructionsUpdateDTO();
+        request.setFieldValue("New instruction is to send via BigBank");
+
+        ResponseEntity<String> response = noAuthRestTemplate.exchange(
+                baseUrl + "/100001/settlement-instructions",
+                HttpMethod.PUT,
+                new HttpEntity<>(request),
+                String.class);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Update settlement instructions by user without privileges returns 403")
+    void testUpdateSettlementInstructionsWithoutPrivilegesReturns403() {
+
+        TestRestTemplate supportRestTemplate = new TestRestTemplate("alice","password");
+        SettlementInstructionsUpdateDTO request = new SettlementInstructionsUpdateDTO();
+        request.setFieldValue("New instruction is to send via BigBank");
+
+        ResponseEntity<String> response = supportRestTemplate.exchange(
+                baseUrl + "/100001/settlement-instructions",
+                HttpMethod.PUT,
+                new HttpEntity<>(request),
+                String.class);
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
     }
 }
