@@ -26,6 +26,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /*
+This test class covers integration tests for command operations i.e. POST, PUT and DELETE requests
 Properties for the application are overridden by src/test/resources/application.properties
 These integration tests use a separate H2 in-memory database to ensure isolation
 Test data is in src/test/resources/data.sql to reduce repetition
