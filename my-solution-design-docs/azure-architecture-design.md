@@ -20,15 +20,30 @@ Azure Kubernetes Service (AKS) has been selected for computing as it provides a 
 
 Although Azure App service is easier to use and provides a more efficient way of building and deploying web applications in comparison to AKS, AKS is more flexible and better suited to the large-scale nature of this full stack trading application. It is highly scalable, able to adapt to potentially increasing workloads in the future and able to perform seamless updates without impacting end user experience, particularly important as the application requires 24/7 availability.
 
+**Summary of Differences**
+
+| Feature           | Azure Kubernetes Services                  | Azure App Service         | Azure Container Apps                         |
+|-------------------|--------------------------------------------|:--------------------------|:---------------------------------------------|
+| Best for          | Complex, scalable, custom workloads        | Web apps, APIs, backends  | Microservices, event-driven, jobs            |
+| Management        | You manage (with Azure help)               | Fully managed             | Fully managed, serverless                    |
+| Scaling           | Manual/auto (pods, nodes)                  | Auto (HTTP traffic)       | Auto (HTTP/events, scale to zero)            |
+| API Access        | Full Kubernetes API                        | No infra access           | No Kubernetes API                            |
+| Networking        | Advanced, customisable                     | Basic (web-centric)       | Basic, with VNet integration                 |
+| Use cases         | Hybrid/multi-cloud, regulated, large-scale | Web, REST APIs, mobile    | Microservices, event-driven, background jobs |
+| Learning curve    | Steep (Kubernetes skills needed)           | Low                       | Low-medium                                   |
+| Pricing           | Pay for nodes (even idle)                  | Pay for plan (fixed/auto) | Pay for usage (scale to zero)                |
+| CI/CD Integration | Azure DevOps, GitHub, custom               | Azure DevOps, GitHub      | Azure DevOps, GitHub                         |
+_Source:_ [Microsoft Community Hub](https://techcommunity.microsoft.com/blog/appsonazureblog/choosing-the-right-azure-containerisation-strategy-aks-app-service-or-container-/4456645)
+
 Resources are to be managed in one subscription and three resource groups, one for AKS, one for Managed PostgreSQL database and one for Virtual Network together with Application Gateway due to their different lifecycles. Having one subscription for trading applications in production will enable granular cost tracking. Role based access control can also be applied to ensure users, groups and applications to limit privileges to the minimum they require.
 
-![alt text](azure-resource-management.png)
+![Azure resource groups ](azure-resource-management.png)
 
 
 ## 2. Architecture Design
-The chosen database is PostgreSQL as the trading application uses the Hibernate Framework which is designed to work with relational databases that have strict schema and can guarantee all database transactions are processed in a reliable way. The application also relies on complex queries and data aggregation which are better supported with PostgreSQL than Cosmos DB. Azure SQL is also a suitable option, but it provides less flexibility for customisation and higher licensing costs in comparison to PostgreSQL. 
+The chosen database is PostgreSQL as the trading application uses the Hibernate Framework which is designed to work with relational databases that have strict schema and can guarantee all database transactions are processed in a reliable way (ACID properties). The application also relies on complex queries and data aggregation which are better supported with PostgreSQL than Cosmos DB. Azure SQL is also a suitable option, but it provides less flexibility for customisation and higher licensing costs in comparison to PostgreSQL. 
 
-![alt text](azure-architecture-design.png)
+![Azure Architecture diagram](azure-architecture-design.png)
 
 ## 3. Deployment Strategy
 
