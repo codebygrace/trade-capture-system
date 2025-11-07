@@ -3,6 +3,8 @@ package com.technicalchallenge.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,6 +27,11 @@ public class ApplicationUser {
     @ManyToOne
     @JoinColumn(name = "user_profile_id")
     private UserProfile userProfile;
+
+    // Created a list of privileges on ApplicationUser for an easier way to access privileges
+    @OneToMany(mappedBy = "applicationUser" , cascade = CascadeType.ALL, orphanRemoval = true)
+    List<UserPrivilege> userPrivileges;
+
     private int version;
     private LocalDateTime lastModifiedTimestamp;
 

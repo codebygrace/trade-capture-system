@@ -22,6 +22,7 @@ export const TRADE_FIELDS = [
     {key: "startDate", label: "Start Date", type: "date"},
     {key: "maturityDate", label: "Maturity Date", type: "date"},
     {key: "executionDate", label: "Execution Date", type: "date"},
+    {key: "fieldValue", label: "Settlement Instructions", type: "textarea"}, // Grace: added field for settlement instructions
     {key: "utiCode", label: "UTI Code", type: "input"},
     {key: "lastTouchTimestamp", label: "Last Touch Timestamp", type: "date"},
     {key: "validityStartDate", label: "Version Active Since", type: "date"},

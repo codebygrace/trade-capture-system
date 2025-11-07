@@ -20,8 +20,10 @@ public class AdditionalInfo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Uses enum to control the types of entities being stored
+    @Enumerated(EnumType.STRING)
     @Column(name = "entity_type", nullable = false)
-    private String entityType; // "TRADE", "COUNTERPARTY", "BOOK", etc.
+    private EntityType entityType; // "TRADE", "COUNTERPARTY", "BOOK", etc.
 
     @Column(name = "entity_id", nullable = false)
     private Long entityId;
@@ -32,8 +34,10 @@ public class AdditionalInfo {
     @Column(name = "field_value", columnDefinition = "TEXT")
     private String fieldValue;
 
+    // Uses enum to control the types of fields being stored
+    @Enumerated(EnumType.STRING)
     @Column(name = "field_type", nullable = false)
-    private String fieldType; // "STRING", "NUMBER", "DATE", "BOOLEAN"
+    private FieldType fieldType; // "STRING", "NUMBER", "DATE", "BOOLEAN"
 
     @Column(name = "active", nullable = false)
     private Boolean active = true;

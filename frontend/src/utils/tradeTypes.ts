@@ -29,6 +29,7 @@ export interface Trade {
   lastTouchTimestamp?: string;
   validityStartDate?: string;
   tradeLegs: TradeLeg[];
+  fieldValue?: SettlementInstructionsUpdateDTO[];
   [key: string]: unknown;
 }
 
@@ -50,4 +51,8 @@ export interface CashflowGenerationLegDTO {
   calculationPeriodSchedule?: string;
   paymentBusinessDayConvention?: string;
   payReceiveFlag?: string;
+}
+
+export interface SettlementInstructionsUpdateDTO {
+	fieldValue?: string;
 }

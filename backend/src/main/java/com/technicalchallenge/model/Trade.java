@@ -59,6 +59,7 @@ public class Trade {
     private LocalDate tradeMaturityDate;
     private LocalDate tradeExecutionDate;
 
+    @Column(name = "additional_fields_id")
     private Long additionalFieldsId;
     private LocalDateTime lastTouchTimestamp;
     private LocalDate validityStartDate;

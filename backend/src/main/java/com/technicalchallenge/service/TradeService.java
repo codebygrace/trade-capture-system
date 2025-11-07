@@ -1,21 +1,34 @@
 package com.technicalchallenge.service;
 
 import com.technicalchallenge.dto.TradeDTO;
+import com.technicalchallenge.dto.TradeFilterDTO;
 import com.technicalchallenge.dto.TradeLegDTO;
+import com.technicalchallenge.exception.TradeValidationException;
+import com.technicalchallenge.exception.UserPrivilegeValidationException;
 import com.technicalchallenge.model.*;
 import com.technicalchallenge.repository.*;
+import com.technicalchallenge.service.validation.UserPrivilegeValidator;
+import com.technicalchallenge.specification.TradeSpecification;
+import com.technicalchallenge.service.validation.TradeValidator;
+import com.technicalchallenge.service.validation.ValidationResult;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static io.github.perplexhub.rsql.RSQLJPASupport.toSpecification;
 
 @Service
 @Transactional
@@ -56,6 +69,10 @@ public class TradeService {
     private PayRecRepository payRecRepository;
     @Autowired
     private AdditionalInfoService additionalInfoService;
+    @Autowired
+    private TradeValidator tradeValidator;
+    @Autowired
+    private UserPrivilegeValidator userPrivilegeValidator;
 
     public List<Trade> getAllTrades() {
         logger.info("Retrieving all trades");
@@ -65,6 +82,27 @@ public class TradeService {
     public Optional<Trade> getTradeById(Long tradeId) {
         logger.debug("Retrieving trade by id: {}", tradeId);
         return tradeRepository.findByTradeIdAndActiveTrue(tradeId);
+    }
+
+    public List<Trade> getTradesByMultiCriteria(String counterpartyName, String bookName, String trader, String status, LocalDate tradeDateStart, LocalDate tradeDateEnd) {
+        logger.info("Retrieving trades matching criteria");
+        return tradeRepository.findByMultiCriteria(counterpartyName, bookName, trader, status, tradeDateStart, tradeDateEnd);
+    }
+
+    public Page<Trade> getAllTradesByFilter(TradeFilterDTO tradeFilterDTO, Pageable pageable) {
+        logger.info("Retrieving trades matching filter");
+        return tradeRepository.findAll(TradeSpecification.getSpecification(tradeFilterDTO), pageable);
+    }
+
+    public Page<Trade> getTradesByRsqlQuery(String query, Pageable pageable) {
+        Specification<Trade> spec = toSpecification(query);
+        logger.info("Retrieving trades matching query");
+        return tradeRepository.findAll(spec, pageable);
+    }
+
+    public List<Trade> getTradesBySettlementInstructions(String instructions) {
+        logger.info("Retrieving trades with matching settlement instructions");
+        return tradeRepository.findBySettlementInstructions(instructions);
     }
 
     @Transactional
@@ -112,6 +150,23 @@ public class TradeService {
     // NEW METHOD: For controller compatibility
     @Transactional
     public Trade saveTrade(Trade trade, TradeDTO tradeDTO) {
+
+        // Grace: added validation checks here as this is the service method invoked by createTrade() in TradeController
+
+        logger.info("Validating user privileges trade");
+
+        boolean hasSufficientPrivileges = userPrivilegeValidator.validateUserPrivileges(tradeDTO.getInputterUserName(),"CREATE",tradeDTO);
+        if(!hasSufficientPrivileges) {
+            throw new UserPrivilegeValidationException("This account lacks the required privileges for this operation");
+        }
+
+        logger.info("Validating trade");
+
+        ValidationResult validationResult = tradeValidator.validateTradeBusinessRules(tradeDTO);
+        if(!validationResult.isValid()) {
+            throw new TradeValidationException("Invalid trade: ", validationResult.getErrors());
+        }
+
         logger.info("Saving trade with ID: {}", trade.getTradeId());
 
         // If this is an existing trade (has ID), handle as amendment
@@ -264,6 +319,14 @@ public class TradeService {
         Optional<Trade> existingTradeOpt = getTradeById(tradeId);
         if (existingTradeOpt.isEmpty()) {
             throw new RuntimeException("Trade not found: " + tradeId);
+        }
+
+        // Grace: added validation check here as this is the service method invoked by updateTrade() in TradeController
+        logger.info("Validating user privileges");
+
+        boolean hasSufficientPrivileges = userPrivilegeValidator.validateUserPrivileges(tradeDTO.getInputterUserName(),"AMEND",tradeDTO);
+        if(!hasSufficientPrivileges) {
+            throw new UserPrivilegeValidationException("This account lacks the required privileges for this operation");
         }
 
         Trade existingTrade = existingTradeOpt.get();
@@ -554,13 +617,12 @@ public class TradeService {
         String legType = leg.getLegRateType().getType();
 
         if ("Fixed".equals(legType)) {
-            double notional = leg.getNotional().doubleValue();
-            double rate = leg.getRate();
-            double months = monthsInterval;
+            BigDecimal notional = leg.getNotional();
+            BigDecimal ratePercentage = BigDecimal.valueOf(leg.getRate());
+            BigDecimal rate = ratePercentage.divide(BigDecimal.valueOf(100),10, RoundingMode.HALF_EVEN);
+            BigDecimal months = BigDecimal.valueOf(monthsInterval);
 
-            double result = (notional * rate * months) / 12;
-
-            return BigDecimal.valueOf(result);
+            return notional.multiply(rate).multiply(months).divide(BigDecimal.valueOf(12),2, RoundingMode.HALF_EVEN);
         } else if ("Floating".equals(legType)) {
             return BigDecimal.ZERO;
         }
