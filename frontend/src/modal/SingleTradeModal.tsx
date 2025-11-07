@@ -139,6 +139,14 @@ export const SingleTradeModal: React.FC<SingleTradeModalProps> = (props) => {
             if (editableTrade.tradeId) {
 
                 await api.put(`/trades/${editableTrade.tradeId}`, tradeDto);
+
+                // Grace: this sends settlement instructions if they exist when updating trade
+                if(editableTrade.fieldValue) {
+                    await api.put(`/trades/${editableTrade.tradeId}/settlement-instructions`, {
+                        fieldValue: editableTrade.fieldValue,
+                    });
+                }
+
                 setSnackbarMsg(`Trade updated successfully! Trade ID: ${editableTrade.tradeId}`);
                 setSnackbarType('success');
                 setSnackbarOpen(true);
@@ -151,6 +159,13 @@ export const SingleTradeModal: React.FC<SingleTradeModalProps> = (props) => {
                 // Save new trade
                 const response = await api.post('/trades', tradeDto);
                 const newTradeId = response.data?.tradeId || response.data?.id || '';
+
+                // Grace: this sends settlement instructions for new trade if they exist when creating trade
+                if (newTradeId && editableTrade.fieldValue) {
+                    await api.put(`/trades/${newTradeId}/settlement-instructions`, {
+                        fieldValue: editableTrade.fieldValue
+                });
+            }
                 setSnackbarMsg(`Trade saved successfully! Trade ID: ${newTradeId}`);
                 setSnackbarType('success');
                 setSnackbarOpen(true);

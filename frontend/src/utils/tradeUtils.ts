@@ -45,6 +45,11 @@ export const getDefaultTrade = (): Trade => JSON.parse(JSON.stringify({
             paymentBusinessDayConvention: 'Modified Following',
             payReceiveFlag: 'Receive',
         }
+    ],
+    additionalFields: [
+        {
+            fieldValue: '',
+        }
     ]
 }));
 
@@ -68,6 +73,7 @@ export const formatTradeForBackend = (trade: Trade): Record<string, unknown> => 
         tradeLegs: trade.tradeLegs.map(leg => ({
             ...leg,
         })),
+        fieldValue: trade.fieldValue,
     };
 };
 

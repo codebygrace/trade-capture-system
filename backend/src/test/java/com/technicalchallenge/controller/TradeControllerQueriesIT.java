@@ -26,12 +26,13 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /*
+This test class covers integration tests for command operations i.e. POST, PUT and DELETE requests
 Properties for the application are overridden by src/test/resources/application.properties
 These integration tests use a separate H2 in-memory database to ensure isolation
 Test data is in src/test/resources/data.sql to reduce repetition
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class TradeControllerIT {
+public class TradeControllerQueriesIT {
 
     @LocalServerPort
     private int port;
@@ -661,6 +662,75 @@ public class TradeControllerIT {
         );
 
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    }
+
+
+    @Test
+    @DisplayName("Search for part of settlement instruction returns trade with matching instruction")
+    void testSearchSettlementInstructions(){
+
+        String instructions = "via JPM New York";
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                baseUrl+"/search/settlement-instructions?instructions=" + instructions,
+                HttpMethod.GET,
+                null,
+                String.class
+        );
+        assertEquals(HttpStatus.OK,response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().contains(instructions));
+    }
+
+    @Test
+    @DisplayName("Search settlement instructions with instructions in that doesn't match one on a trade returns empty list")
+    void testSearchSettlementInstructionsWithEmptyString(){
+
+        String instructions = "Send to Test Bank";
+
+        ResponseEntity<List<TradeDTO>> response = restTemplate.exchange(
+                baseUrl+"/search/settlement-instructions?instructions=" + instructions,
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<>() {}
+        );
+        assertEquals(HttpStatus.OK,response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().isEmpty());
+    }
+
+    @Test
+    @DisplayName("Search settlement instructions without authentication returns 401")
+    void testSearchSettlementWithoutAuthenticationReturnsUnauthorised() {
+        TestRestTemplate noAuthTemplate = new TestRestTemplate();
+
+        String instructions = "via JPM New York";
+
+        ResponseEntity<String> response = noAuthTemplate.exchange(
+                baseUrl+"/search/settlement-instructions?instructions=" + instructions,
+                HttpMethod.GET,
+                null,
+                String.class
+        );
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Search for settlement instruction is case insensitive")
+    void testSearchSettlementInstructionsCaseInsensitive(){
+
+        String instructions = "vIa jpm nEW yoRK";
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                baseUrl+"/search/settlement-instructions?instructions=" + instructions,
+                HttpMethod.GET,
+                null,
+                String.class
+        );
+        assertEquals(HttpStatus.OK,response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().toLowerCase().contains(instructions.toLowerCase()));
     }
 
 }

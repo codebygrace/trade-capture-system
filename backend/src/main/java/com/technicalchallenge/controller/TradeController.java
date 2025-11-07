@@ -1,13 +1,17 @@
 package com.technicalchallenge.controller;
 
 import com.technicalchallenge.dto.DailySummaryDTO;
+import com.technicalchallenge.dto.AdditionalInfoDTO;
+import com.technicalchallenge.dto.SettlementInstructionsUpdateDTO;
 import com.technicalchallenge.dto.TradeDTO;
 import com.technicalchallenge.dto.TradeFilterDTO;
 import com.technicalchallenge.dto.TradeSummaryDTO;
 import com.technicalchallenge.exception.TradeValidationException;
 import com.technicalchallenge.exception.UserPrivilegeValidationException;
+import com.technicalchallenge.mapper.SettlementInstructionsMapper;
 import com.technicalchallenge.mapper.TradeMapper;
 import com.technicalchallenge.model.Trade;
+import com.technicalchallenge.service.AdditionalInfoService;
 import com.technicalchallenge.service.TradeService;
 import com.technicalchallenge.service.TradeReportingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +57,14 @@ public class TradeController {
     @Autowired
     TradeReportingService tradeReportingService;
 
+    private final AdditionalInfoService additionalInfoService;
+    @Autowired
+    private SettlementInstructionsMapper settlementInstructionsMapper;
+
+    public TradeController(AdditionalInfoService additionalInfoService) {
+        this.additionalInfoService = additionalInfoService;
+    }
+
     @PreAuthorize("hasAnyRole('TRADER_SALES', 'SUPERUSER', 'MO', 'SUPPORT')")
     @GetMapping
     @Operation(summary = "Get all trades",
@@ -86,6 +98,23 @@ public class TradeController {
         return tradeService.getTradesByMultiCriteria(counterpartyName, bookName, trader,status, tradeDateStart,tradeDateEnd).stream()
                 .map(tradeMapper::toDto)
                 .toList();
+    }
+
+    // Search trades by settlement instruction content
+    @Operation(summary = "Search trades by settlement instructions",
+            description = "Retrieves a list of all trades with settlement instructions that contain the search string. Returns comprehensive trade information including legs and cashflows.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved trades",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = TradeDTO.class))),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping("/search/settlement-instructions")
+    public ResponseEntity<List<TradeDTO>> searchBySettlementInstructions(
+            @RequestParam String instructions) {
+        logger.info("Fetching trades containing settlement instructions");
+        List<TradeDTO> tradeDTOs = tradeService.getTradesBySettlementInstructions(instructions).stream().map(tradeMapper::toDto).toList();
+        return ResponseEntity.ok().body(tradeDTOs) ;
     }
 
     // Handler for trade filter by counterparty, book, trader, status, trade date ranges
@@ -276,6 +305,42 @@ public class TradeController {
         } catch (Exception e) {
             logger.error("Error updating trade: {}", e.getMessage(), e);
             return ResponseEntity.badRequest().body("Error updating trade: " + e.getMessage());
+        }
+    }
+
+    // Update settlement instructions for trades
+    // TRADER_SALES and MO require the ability to update settlement instructions
+    @PreAuthorize("hasAnyRole('TRADER_SALES', 'SUPERUSER', 'MO')")
+    @PutMapping("/{id}/settlement-instructions")
+    @Operation(summary = "Update trade settlement instructions",
+            description = "Updates trade settlement instructions with new information. Subject to business rule validation and user privileges.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Settlement instructions updated successfully",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = SettlementInstructionsUpdateDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Trade not found"),
+            @ApiResponse(responseCode = "400", description = "Invalid data or business rule violation"),
+            @ApiResponse(responseCode = "403", description = "Insufficient privileges to update instructions")
+    })
+    public ResponseEntity<?> updateSettlementInstructions(
+            @Parameter(description = "Unique identifier of the trade to update", required = true)
+            @PathVariable Long id,
+            @Parameter(description = "Updated trade settlement instructions")
+            @Valid @RequestBody SettlementInstructionsUpdateDTO request) {
+        logger.info("Updating settlement instructions for trade with id: {}", id);
+        try {
+            // Check to see if trade exists
+            if (tradeService.getTradeById(id).isEmpty()) {
+                return ResponseEntity.badRequest().body("Trade with id: " + id + " does not exist");
+            }
+
+            request.setEntityId(id);
+            AdditionalInfoDTO dto = settlementInstructionsMapper.toDto(request);
+            AdditionalInfoDTO amendedInstructions = additionalInfoService.updateAdditionalInfo(dto);
+            return ResponseEntity.ok(settlementInstructionsMapper.toRequest(amendedInstructions));
+        } catch (Exception e) {
+            logger.error("Error updating trade settlement instructions: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().body("Error updating trade settlement instructions: " + e.getMessage());
         }
     }
 

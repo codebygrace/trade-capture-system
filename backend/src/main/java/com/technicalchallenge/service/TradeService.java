@@ -100,6 +100,11 @@ public class TradeService {
         return tradeRepository.findAll(spec, pageable);
     }
 
+    public List<Trade> getTradesBySettlementInstructions(String instructions) {
+        logger.info("Retrieving trades with matching settlement instructions");
+        return tradeRepository.findBySettlementInstructions(instructions);
+    }
+
     @Transactional
     public Trade createTrade(TradeDTO tradeDTO) {
         logger.info("Creating new trade with ID: {}", tradeDTO.getTradeId());

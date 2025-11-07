@@ -59,4 +59,11 @@ public interface TradeRepository extends JpaRepository<Trade, Long>, JpaSpecific
     @Query("SELECT COUNT(t) FROM Trade t WHERE t.traderUser.loginId = :loginId AND t.tradeDate = :tradeDate AND t.active = true")
     long countTradeByTraderAndTradeDate(@Param("loginId") String loginId, @Param("tradeDate") LocalDate tradeDate);
 
+
+    // Method for searching trades by settlement instructions. LIKE is used to ensure partial matches are found
+    @Query("SELECT t FROM Trade t, AdditionalInfo a WHERE t.tradeId = a.entityId " +
+            "AND a.entityType = 'TRADE' AND a.fieldName = 'SETTLEMENT_INSTRUCTIONS' " +
+            "AND LOWER(a.fieldValue) LIKE LOWER(CONCAT('%', :instructions, '%'))")
+    List<Trade> findBySettlementInstructions(@Param("instructions") String instructions);
+
 }
