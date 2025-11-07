@@ -2,7 +2,7 @@
 INSERT INTO desk (id, desk_name) VALUES (1000, 'FX'), (1001, 'Rates'), (1002, 'Credit');
 INSERT INTO sub_desk (id, subdesk_name, desk_id) VALUES (1000, 'FX Spot', 1000), (1001, 'FX Options', 1000), (1002, 'Rates Swaps', 1001);
 INSERT INTO cost_center (id, cost_center_name, subdesk_id) VALUES (1000, 'London Trading', 1000), (1001, 'NY Trading', 1002);
-INSERT INTO book (id, book_name, active, version, cost_center_id) VALUES (1000, 'FX-BOOK-1', true, 1, 1000), (1001, 'RATES-BOOK-1', true, 1, 1001);
+INSERT INTO book (id, book_name, active, version, cost_center_id) VALUES (1000, 'FX-BOOK-1', true, 1, 1000), (1001, 'RATES-BOOK-1', true, 1, 1001), (2000, 'INACTIVE-BOOK-1', false, 1, 1000);
 INSERT INTO trade_type (id, trade_type) VALUES (1000, 'Spot'), (1001, 'Swap'), (1002, 'Option');
 INSERT INTO trade_sub_type (id, trade_sub_type) VALUES (1000, 'Vanilla'), (1001, 'Barrier'), (1002, 'XCCY Swap'), (1003, 'IR Swap');
 INSERT INTO trade_status (id, trade_status) VALUES (1000, 'NEW'), (1001, 'AMENDED'), (1002, 'TERMINATED'),(1003, 'CANCELLED'), (1004, 'LIVE'), (1005, 'DEAD');
@@ -33,7 +33,8 @@ INSERT INTO user_privilege (user_id, privilege_id) VALUES (1000, 1000), (1001, 1
 -- Counterparties
 INSERT INTO counterparty (id, name, address, phone_number, internal_code, created_date, last_modified_date, active) VALUES
   (1000, 'BigBank', '1 Bank St', '123-456-7890', 1001, '2024-01-01', '2025-06-02', true),
-  (1001, 'MegaFund', '2 Fund Ave', '987-654-3210', 1002, '2024-01-01', '2025-06-02', true);
+  (1001, 'MegaFund', '2 Fund Ave', '987-654-3210', 1002, '2024-01-01', '2025-06-02', true),
+  (2000, 'InactiveBank', '1 Bank St', '123-456-7890', 2000, '2025-01-01', '2025-06-02', false);
 
 -- Sample Trades
 INSERT INTO trade (id, trade_id, version, book_id, counterparty_id, trader_user_id, inputter_user_id, trade_type_id, trade_sub_type_id, trade_status_id,
