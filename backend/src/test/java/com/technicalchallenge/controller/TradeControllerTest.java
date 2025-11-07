@@ -7,6 +7,7 @@ import com.technicalchallenge.dto.TradeFilterDTO;
 import com.technicalchallenge.mapper.SettlementInstructionsMapper;
 import com.technicalchallenge.mapper.TradeMapper;
 import com.technicalchallenge.model.Trade;
+import com.technicalchallenge.service.TradeReportingService;
 import com.technicalchallenge.service.AdditionalInfoService;
 import com.technicalchallenge.service.TradeService;
 import cz.jirutka.rsql.parser.UnknownOperatorException;
@@ -46,6 +47,9 @@ public class TradeControllerTest {
 
     @MockBean
     private TradeService tradeService;
+
+    @MockBean
+    private TradeReportingService tradeReportingService;
 
     @MockBean
     private TradeMapper tradeMapper;
