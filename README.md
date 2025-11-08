@@ -38,9 +38,9 @@ and publishes it to [Docker Hub](https://hub.docker.com/r/codebygrace/backend/ta
 
 ### Testing
 
-### Key Resources
-- **Detailed Setup Guide**: See `PROJECT-SETUP-GUIDE.md`
-- **Database Console**: JDBC URL: `jdbc:h2:file:./data/tradingdb`, User: `sa`, Password: password
+In addition to writing unit tests and integration tests using TestRestTemplate, I created and maintained a Postman collection
+used as a quick way to test endpoints during development. This collection can also be used for post deployment checks 
+and testing endpoints to ensure new changes have not introduced regressions into the existing API functionality. To view this collection and see example requests, click the button below:
 
 [<img src="https://run.pstmn.io/button.svg" alt="Run In Postman" style="width: 128px; height: 32px;">](https://god.gw.postman.com/run-collection/46779254-6ffd0ffa-65f2-4ae3-9acc-1ad5088df481?action=collection%2Ffork&source=rip_markdown&collection-url=entityId%3D46779254-6ffd0ffa-65f2-4ae3-9acc-1ad5088df481%26entityType%3Dcollection%26workspaceId%3D2f6f14a3-44c4-433e-b9ec-e9fbeafbc238)
 
@@ -57,48 +57,7 @@ which contains full details for this step.
 ### Step 3: Implement Missing Functionality
 #### 3.1: Advanced Trade Search System
 
-### Templates
-- **Git Standards**: `git-commit-standards.md`
-- **Self-Assessment**: `test-fix-checklist.md`
-
----
-
-## Step 3: Implement Missing Functionality (REQUIRED)
-
-### Business Enhancement Request
-
-**Request ID:** TRADE-2025-REQ-003  
-**Priority:** High  
-**Requested By:** Trading Desk Operations Team  
-**Business Sponsor:** Head of Trading Operations  
-**Date Requested:** September 15, 2025  
-
-### **Business Case:**
-The trading desk has identified critical gaps in the current trading application that are impacting daily operations and trader productivity. Traders are struggling with basic operational tasks due to missing search capabilities, insufficient validation systems, and lack of personalized dashboard views.
-
-### **Current Pain Points:**
-- **Inefficient Trade Search**: Traders spend 30+ minutes daily manually scrolling through trade lists to find specific trades
-- **Validation Gaps**: Invalid trades are being created, causing downstream settlement issues and operational risk
-- **No Personalized Views**: Traders cannot easily see their own trades or get summary statistics for decision making
-- **Manual Processes**: Lack of dashboard functionality forces traders to use spreadsheets for trade monitoring
-
-### **Business Impact:**
-- Reduced trading efficiency and productivity
-- Increased operational risk due to validation gaps
-- Poor user experience leading to trader frustration
-- Manual workarounds creating audit trail issues
-
-## Required Enhancement Implementation
-
-You must implement **ALL THREE** of the following critical enhancements:
-
-### **Enhancement 1: Advanced Trade Search System**
-
-**Business Requirement**: "As a trader, I need to quickly find trades using multiple search criteria so that I can efficiently manage my trading portfolio."
-
-**Current Problem**: The application only supports basic trade retrieval (get all, get by ID) but lacks the advanced search capabilities traders need.
-
-**Required Implementation:**
+I implemented and tested all 3 endpoints to support advanced search capabilities:
 ```java
 @GetMapping("/search") // Multi-criteria search
 @GetMapping("/filter") // Paginated filtering  
